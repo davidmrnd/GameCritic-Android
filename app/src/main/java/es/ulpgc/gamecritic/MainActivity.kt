@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import es.ulpgc.gamecritic.ui.LoginScreen
+import es.ulpgc.gamecritic.ui.RegisterScreen
 import es.ulpgc.gamecritic.navigation.NavGraph
 import es.ulpgc.gamecritic.ui.components.BottomNavBar
 import es.ulpgc.gamecritic.ui.theme.GameCriticTheme
@@ -24,10 +25,19 @@ class MainActivity : ComponentActivity() {
         setContent {
             GameCriticTheme {
                 var isLoggedIn by remember { mutableStateOf(false) }
+                var showRegister by remember { mutableStateOf(false) }
                 if (!isLoggedIn) {
-                    LoginScreen(
-                        onLoginSuccess = { isLoggedIn = true }
-                    )
+                    if (showRegister) {
+                        RegisterScreen(
+                            onRegisterSuccess = { isLoggedIn = true },
+                            onNavigateToLogin = { showRegister = false }
+                        )
+                    } else {
+                        LoginScreen(
+                            onLoginSuccess = { isLoggedIn = true },
+                            onNavigateToRegister = { showRegister = true }
+                        )
+                    }
                 } else {
                     val navController = rememberNavController()
                     val currentRoute = remember { mutableStateOf("home") }
