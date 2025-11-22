@@ -1,7 +1,8 @@
-package es.ulpgc.gamecritic.auth
+package es.ulpgc.gamecritic.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import es.ulpgc.gamecritic.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -13,7 +14,7 @@ sealed class LoginState {
     data class Error(val message: String) : LoginState()
 }
 
-class LoginViewModel(private val repository: LoginRepository = LoginRepository()) : ViewModel() {
+class LoginViewModel(private val repository: AuthRepository = AuthRepository()) : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState
 

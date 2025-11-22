@@ -1,5 +1,6 @@
-package es.ulpgc.gamecritic.auth
+package es.ulpgc.gamecritic.ui
 
+import android.util.Patterns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +19,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.TextStyle
+import es.ulpgc.gamecritic.viewmodel.LoginState
+import es.ulpgc.gamecritic.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
@@ -29,7 +32,7 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var showErrors by remember { mutableStateOf(false) }
 
-    val emailError = showErrors && (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches())
+    val emailError = showErrors && (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches())
     val passwordError = showErrors && password.isBlank()
 
     Scaffold(
