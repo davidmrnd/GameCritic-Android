@@ -24,5 +24,26 @@ class VideogameRepository {
             } else null
         }
     }
-}
 
+    suspend fun getVideogameById(id: String): Videogame? {
+        val doc = firestore
+            .collection("videogames")
+            .document(id)
+            .get()
+            .await()
+
+        if (!doc.exists()) return null
+
+        val categories = doc.get("category") as? List<String> ?: emptyList()
+
+        return Videogame(
+            id = doc.getString("id") ?: doc.id,
+            title = doc.getString("title") ?: "",
+            subtitle = doc.getString("subtitle") ?: "",
+            description = doc.getString("description") ?: "",
+            category = categories,
+            imageCarousel = doc.getString("imagecarousel") ?: "",
+            imageProfile = doc.getString("imageprofile") ?: ""
+        )
+    }
+}

@@ -9,14 +9,27 @@ import es.ulpgc.gamecritic.ui.SearchScreen
 import es.ulpgc.gamecritic.ui.FollowingScreen
 import es.ulpgc.gamecritic.ui.ProfileScreen
 import es.ulpgc.gamecritic.ui.EditProfileScreen
+import es.ulpgc.gamecritic.ui.VideogameDetailScreen
 
 @Composable
 fun NavGraph(navController: NavHostController, startDestination: String) {
     NavHost(navController = navController, startDestination = startDestination) {
-        composable("home") { HomeScreen() }
+        composable("home") { HomeScreen(navController = navController) }
         composable("search") { SearchScreen() }
         composable("following") { FollowingScreen() }
         composable("profile") { ProfileScreen(navController = navController) }
-        composable("edit_profile") { EditProfileScreen(onCancel = { navController.popBackStack() }, onSave = { navController.popBackStack() }) }
+        composable("edit_profile") {
+            EditProfileScreen(
+                onCancel = { navController.popBackStack() },
+                onSave = { navController.popBackStack() }
+            )
+        }
+        composable("videogame_detail/{videogameId}") { backStackEntry ->
+            val videogameId = backStackEntry.arguments?.getString("videogameId") ?: return@composable
+            VideogameDetailScreen(
+                videogameId = videogameId,
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }

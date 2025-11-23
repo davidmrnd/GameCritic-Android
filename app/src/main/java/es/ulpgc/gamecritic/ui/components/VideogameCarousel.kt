@@ -2,6 +2,7 @@ package es.ulpgc.gamecritic.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +26,8 @@ import es.ulpgc.gamecritic.model.Videogame
 fun VideogameCarousel(
     videogames: List<Videogame>,
     categoryName: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onVideogameClick: (Videogame) -> Unit
 ) {
     Column(modifier = modifier) {
         Text(
@@ -45,7 +47,8 @@ fun VideogameCarousel(
                     modifier = Modifier
                         .width(260.dp)
                         .height(205.dp)
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = 12.dp)
+                        .clickable { onVideogameClick(game) },
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     elevation = CardDefaults.cardElevation(8.dp)

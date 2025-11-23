@@ -11,11 +11,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
-import es.ulpgc.gamecritic.viewmodel.VideogameCarouselViewModel
+import androidx.navigation.NavController
 import es.ulpgc.gamecritic.ui.components.VideogameCarousel
+import es.ulpgc.gamecritic.viewmodel.VideogameCarouselViewModel
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
     val carouselViewModel: VideogameCarouselViewModel = viewModel()
     val videogames = carouselViewModel.videogames
 
@@ -39,7 +40,10 @@ fun HomeScreen() {
         )
         VideogameCarousel(
             videogames = videogames,
-            categoryName = "Novedades"
+            categoryName = "Novedades",
+            onVideogameClick = { game ->
+                navController.navigate("videogame_detail/${game.id}")
+            }
         )
     }
 }
