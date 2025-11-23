@@ -31,4 +31,21 @@ class ProfileViewModel : ViewModel() {
     val description get() = user?.description ?: ""
     val followingCount get() = user?.following?.size ?: 0
     val followersCount get() = user?.followers?.size ?: 0
+
+    fun editProfile(name: String, username: String, description: String, onComplete: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val uid = userRepository.getCurrentUserId()
+            if (uid != null) {
+                try {
+                    userRepository.updateUserProfile(uid, name, username, description)
+                    user = userRepository.getUserProfile(uid)
+                    onComplete(true)
+                } catch (e: Exception) {
+                    onComplete(false)
+                }
+            } else {
+                onComplete(false)
+            }
+        }
+    }
 }

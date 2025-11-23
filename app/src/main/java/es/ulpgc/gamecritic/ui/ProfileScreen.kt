@@ -18,9 +18,12 @@ import coil.compose.rememberAsyncImagePainter
 import es.ulpgc.gamecritic.viewmodel.ProfileViewModel
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
+import androidx.navigation.NavController
+import androidx.compose.material3.Button
+import androidx.compose.ui.draw.shadow
 
 @Composable
-fun ProfileScreen(viewModel: ProfileViewModel = viewModel()) {
+fun ProfileScreen(viewModel: ProfileViewModel = viewModel(), navController: NavController? = null) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -28,7 +31,12 @@ fun ProfileScreen(viewModel: ProfileViewModel = viewModel()) {
             .padding(24.dp),
         contentAlignment = Alignment.TopCenter
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .width(375.dp)
+                .padding(40.dp)
+        ) {
             Spacer(modifier = Modifier.height(32.dp))
             Row(
                 verticalAlignment = Alignment.Top,
@@ -68,7 +76,7 @@ fun ProfileScreen(viewModel: ProfileViewModel = viewModel()) {
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = viewModel.username.uppercase(),
+                        text = "@" + viewModel.username.uppercase(),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.Black
                         )
@@ -82,7 +90,16 @@ fun ProfileScreen(viewModel: ProfileViewModel = viewModel()) {
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { navController?.navigate("edit_profile") },
+                enabled = navController != null,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFFF4D73E))
+            ) {
+                Text("Editar usuario", fontWeight = FontWeight.Bold)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly

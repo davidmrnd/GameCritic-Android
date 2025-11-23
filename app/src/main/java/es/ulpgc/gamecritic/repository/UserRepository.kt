@@ -27,4 +27,13 @@ class UserRepository {
             followers = (doc.get("followers") as? List<String>) ?: emptyList()
         )
     }
+
+    suspend fun updateUserProfile(uid: String, name: String, username: String, description: String) {
+        val updates = mapOf(
+            "name" to name,
+            "username" to username,
+            "description" to description
+        )
+        firestore.collection("users").document(uid).update(updates).await()
+    }
 }

@@ -8,6 +8,7 @@ import es.ulpgc.gamecritic.ui.HomeScreen
 import es.ulpgc.gamecritic.ui.SearchScreen
 import es.ulpgc.gamecritic.ui.FollowingScreen
 import es.ulpgc.gamecritic.ui.ProfileScreen
+import es.ulpgc.gamecritic.ui.EditProfileScreen
 
 @Composable
 fun NavGraph(navController: NavHostController, startDestination: String) {
@@ -15,6 +16,7 @@ fun NavGraph(navController: NavHostController, startDestination: String) {
         composable("home") { HomeScreen() }
         composable("search") { SearchScreen() }
         composable("following") { FollowingScreen() }
-        composable("profile") { ProfileScreen() }
+        composable("profile") { ProfileScreen(navController = navController) }
+        composable("edit_profile") { EditProfileScreen(onCancel = { navController.popBackStack() }, onSave = { navController.popBackStack() }) }
     }
 }
