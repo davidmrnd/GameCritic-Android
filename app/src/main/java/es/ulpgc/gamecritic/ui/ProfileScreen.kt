@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import es.ulpgc.gamecritic.viewmodel.ProfileViewModel
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun ProfileScreen(viewModel: ProfileViewModel = viewModel()) {
@@ -23,64 +25,98 @@ fun ProfileScreen(viewModel: ProfileViewModel = viewModel()) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF0ECE3))
-            .padding(40.dp),
-        contentAlignment = Alignment.Center
+            .padding(24.dp),
+        contentAlignment = Alignment.TopCenter
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            if (viewModel.profileIcon.isNotBlank()) {
-                Image(
-                    painter = rememberAsyncImagePainter(viewModel.profileIcon),
-                    contentDescription = "Foto de perfil",
-                    modifier = Modifier.size(96.dp),
-                    contentScale = ContentScale.Crop
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-            Text(
-                text = viewModel.name,
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-            )
-            Text(
-                text = "@${viewModel.username}",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = Color.DarkGray,
-                    textAlign = TextAlign.Center
-                )
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = viewModel.email,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = Color.Black,
-                    textAlign = TextAlign.Center
-                )
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = viewModel.description,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = Color.Black,
-                    textAlign = TextAlign.Center
-                ),
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(32.dp))
             Row(
-                horizontalArrangement = Arrangement.spacedBy(32.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "Siguiendo: ${viewModel.followingCount}",
-                    style = MaterialTheme.typography.bodyLarge.copy(color = Color.Black)
-                )
-                Text(
-                    text = "Seguidores: ${viewModel.followersCount}",
-                    style = MaterialTheme.typography.bodyLarge.copy(color = Color.Black)
-                )
+                if (viewModel.profileIcon.isNotBlank()) {
+                    Image(
+                        painter = rememberAsyncImagePainter(viewModel.profileIcon),
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFD9D9D9)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("", color = Color.Gray)
+                    }
+                }
+                Spacer(modifier = Modifier.width(24.dp))
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Text(
+                        text = viewModel.name.uppercase(),
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = viewModel.username.uppercase(),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.Black
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = viewModel.description,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.Black
+                        )
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Valoraciones",
+                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.Black)
+                    )
+                    Text(
+                        text = "0",
+                        style = MaterialTheme.typography.bodyLarge.copy(color = Color.Black)
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Seguidores",
+                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.Black)
+                    )
+                    Text(
+                        text = viewModel.followersCount.toString(),
+                        style = MaterialTheme.typography.bodyLarge.copy(color = Color.Black)
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Seguidos",
+                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.Black)
+                    )
+                    Text(
+                        text = viewModel.followingCount.toString(),
+                        style = MaterialTheme.typography.bodyLarge.copy(color = Color.Black)
+                    )
+                }
             }
         }
     }
