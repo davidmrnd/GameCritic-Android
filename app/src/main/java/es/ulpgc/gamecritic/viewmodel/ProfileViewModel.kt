@@ -8,18 +8,48 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import es.ulpgc.gamecritic.model.Comment
+import es.ulpgc.gamecritic.repository.CommentRepository
+import kotlinx.coroutines.Dispatchers
 
 class ProfileViewModel : ViewModel() {
+    private val userRepository = UserRepository()
+    private val commentRepository = CommentRepository()
+
     var user by mutableStateOf<User?>(null)
         private set
 
-    private val userRepository = UserRepository()
+    var userComments by mutableStateOf<List<Comment>>(emptyList())
+        private set
+
+    var isLoadingComments by mutableStateOf(false)
+        private set
+
+    var commentsError by mutableStateOf<String?>(null)
+        private set
 
     init {
         viewModelScope.launch {
             val uid = userRepository.getCurrentUserId()
             if (uid != null) {
                 user = userRepository.getUserProfile(uid)
+                loadUserComments(uid)
+            }
+        }
+    }
+
+    fun loadUserComments(userId: String = user?.id.orEmpty()) {
+        if (userId.isBlank()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            isLoadingComments = true
+            commentsError = null
+            try {
+                userComments = commentRepository.getCommentsForUser(userId)
+            } catch (e: Exception) {
+                userComments = emptyList()
+                commentsError = e.message
+            } finally {
+                isLoadingComments = false
             }
         }
     }

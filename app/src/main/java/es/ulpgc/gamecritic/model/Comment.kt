@@ -3,6 +3,8 @@ package es.ulpgc.gamecritic.model
 data class Comment(
     val id: String = "",
     val videogameId: String = "",
+    val videogameTitle: String = "",
+    val videogameImage: String = "",
     val userId: String = "",
     val username: String = "",
     val userProfileIcon: String = "",

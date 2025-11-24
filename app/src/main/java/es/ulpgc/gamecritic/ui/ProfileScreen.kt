@@ -28,6 +28,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Surface
+import coil.compose.AsyncImage
+import es.ulpgc.gamecritic.model.Comment
 
 @Composable
 fun ProfileScreen(
@@ -45,10 +53,8 @@ fun ProfileScreen(
         contentAlignment = Alignment.TopCenter
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .width(375.dp)
-                .padding(40.dp)
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(32.dp))
             Row(
@@ -162,6 +168,12 @@ fun ProfileScreen(
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
+            UserCommentsSection(
+                comments = viewModel.userComments,
+                isLoading = viewModel.isLoadingComments,
+                errorMessage = viewModel.commentsError
+            )
         }
 
         if (showLogoutDialog) {
@@ -195,6 +207,109 @@ fun ProfileScreen(
                     }
                 },
                 containerColor = Color(0xFFE0E0E0)
+            )
+        }
+    }
+}
+
+@Composable
+private fun UserCommentsSection(
+    comments: List<Comment>,
+    isLoading: Boolean,
+    errorMessage: String?
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Comentarios del usuario",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = Color.Black,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+        when {
+            isLoading -> {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            errorMessage != null -> {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+            comments.isEmpty() -> {
+                Text(
+                    text = "El usuario aún no ha comentado ningún videojuego.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            }
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 400.dp)
+                ) {
+                    items(comments) { comment ->
+                        UserCommentCard(comment)
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun UserCommentCard(comment: Comment) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(shape = RoundedCornerShape(12.dp), color = Color.LightGray) {
+                        AsyncImage(
+                            model = comment.videogameImage,
+                            contentDescription = comment.videogameTitle,
+                            modifier = Modifier.size(36.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = comment.videogameTitle.ifBlank { "Videojuego desconocido" },
+                            style = MaterialTheme.typography.titleSmall,
+                            color = Color.Black
+                        )
+                        Text(
+                            text = comment.createdAtFormatted.ifBlank { "Fecha no disponible" },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color(0xFF666666)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "★ ${comment.rating}",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color(0xFFF4D73E)
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = comment.content,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Black
             )
         }
     }
