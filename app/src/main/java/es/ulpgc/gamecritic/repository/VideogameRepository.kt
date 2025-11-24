@@ -46,4 +46,39 @@ class VideogameRepository {
             imageProfile = doc.getString("imageprofile") ?: ""
         )
     }
+
+    suspend fun searchVideogamesByQuery(query: String, limit: Long = 50): List<Videogame> {
+        val normalizedQuery = query.trim()
+        if (normalizedQuery.isEmpty()) return emptyList()
+
+        val snapshot = firestore
+            .collection("videogames")
+            .limit(limit)
+            .get()
+            .await()
+
+        return snapshot.documents.mapNotNull { doc ->
+            val categories = doc.get("category") as? List<String> ?: emptyList()
+            val title = doc.getString("title") ?: ""
+            val subtitle = doc.getString("subtitle") ?: ""
+
+            val normalizedTitle = title.lowercase()
+            val normalizedSubtitle = subtitle.lowercase()
+            val normalizedSearch = normalizedQuery.lowercase()
+
+            if (normalizedTitle.contains(normalizedSearch) || normalizedSubtitle.contains(normalizedSearch)) {
+                Videogame(
+                    id = doc.getString("id") ?: doc.id,
+                    title = title,
+                    subtitle = subtitle,
+                    description = doc.getString("description") ?: "",
+                    category = categories,
+                    imageCarousel = doc.getString("imagecarousel") ?: "",
+                    imageProfile = doc.getString("imageprofile") ?: ""
+                )
+            } else {
+                null
+            }
+        }
+    }
 }

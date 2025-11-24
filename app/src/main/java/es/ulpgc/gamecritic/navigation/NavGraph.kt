@@ -15,7 +15,18 @@ import es.ulpgc.gamecritic.ui.VideogameDetailScreen
 fun NavGraph(navController: NavHostController, startDestination: String, onLogout: () -> Unit) {
     NavHost(navController = navController, startDestination = startDestination) {
         composable("home") { HomeScreen(navController = navController) }
-        composable("search") { SearchScreen() }
+        composable("search") {
+            SearchScreen(
+                onVideogameClick = { game ->
+                    navController.navigate("videogame_detail/${game.id}")
+                },
+                onUserClick = { user ->
+                    // Aquí puedes navegar a una pantalla de perfil de otro usuario si la creas más adelante.
+                    // Por ahora, no hay un destino definido para perfiles ajenos.
+                    // Ejemplo futuro: navController.navigate("user_profile/${user.id}")
+                }
+            )
+        }
         composable("following") { FollowingScreen() }
         composable("profile") { ProfileScreen(navController = navController, onLogout = onLogout) }
         composable("edit_profile") {
