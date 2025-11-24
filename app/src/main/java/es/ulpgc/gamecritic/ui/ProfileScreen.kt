@@ -20,10 +20,23 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.navigation.NavController
 import androidx.compose.material3.Button
-import androidx.compose.ui.draw.shadow
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @Composable
-fun ProfileScreen(viewModel: ProfileViewModel = viewModel(), navController: NavController? = null) {
+fun ProfileScreen(
+    viewModel: ProfileViewModel = viewModel(),
+    navController: NavController? = null,
+    onLogout: () -> Unit = {}
+) {
+    var showLogoutDialog by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -91,13 +104,27 @@ fun ProfileScreen(viewModel: ProfileViewModel = viewModel(), navController: NavC
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { navController?.navigate("edit_profile") },
-                enabled = navController != null,
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFFF4D73E))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text("Editar usuario", fontWeight = FontWeight.Bold)
+                Button(
+                    onClick = { navController?.navigate("edit_profile") },
+                    enabled = navController != null,
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF4D73E)),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Editar usuario", fontWeight = FontWeight.Bold, color = Color.Black)
+                }
+                Button(
+                    onClick = { showLogoutDialog = true },
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Cerrar sesión", fontWeight = FontWeight.Bold, color = Color.Black)
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
             Row(
@@ -135,6 +162,40 @@ fun ProfileScreen(viewModel: ProfileViewModel = viewModel(), navController: NavC
                     )
                 }
             }
+        }
+
+        if (showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title = {
+                    Text(
+                        text = "Cerrar sesión",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        color = Color.Black
+                    )
+                },
+                text = {
+                    Text(
+                        text = "¿Seguro que deseas cerrar sesión?",
+                        style = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                        color = Color.Black
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showLogoutDialog = false
+                        onLogout()
+                    }) {
+                        Text("Sí, cerrar sesión", color = Color.Red, fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showLogoutDialog = false }) {
+                        Text("Cancelar", color = Color.Black)
+                    }
+                },
+                containerColor = Color(0xFFE0E0E0)
+            )
         }
     }
 }

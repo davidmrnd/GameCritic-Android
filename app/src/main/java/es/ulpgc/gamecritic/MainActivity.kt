@@ -29,24 +29,33 @@ class MainActivity : ComponentActivity() {
                 if (!isLoggedIn) {
                     if (showRegister) {
                         RegisterScreen(
-                            onRegisterSuccess = { isLoggedIn = true },
+                            onRegisterSuccess = {
+                                isLoggedIn = true
+                            },
                             onNavigateToLogin = { showRegister = false }
                         )
                     } else {
                         LoginScreen(
-                            onLoginSuccess = { isLoggedIn = true },
+                            onLoginSuccess = {
+                                isLoggedIn = true
+                            },
                             onNavigateToRegister = { showRegister = true }
                         )
                     }
                 } else {
                     val navController = rememberNavController()
                     val currentRoute = remember { mutableStateOf("home") }
+                    val onLogout: () -> Unit = {
+                        showRegister = false
+                        isLoggedIn = false
+                    }
                     Surface {
                         Column {
                             androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) {
                                 NavGraph(
                                     navController = navController,
-                                    startDestination = currentRoute.value
+                                    startDestination = currentRoute.value,
+                                    onLogout = onLogout
                                 )
                             }
                             BottomNavBar(selectedRoute = currentRoute.value) { route ->

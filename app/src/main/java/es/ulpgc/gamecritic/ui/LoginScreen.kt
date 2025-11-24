@@ -163,7 +163,13 @@ fun LoginScreen(
                     CircularProgressIndicator(modifier = Modifier.padding(top = 8.dp))
                 }
                 if (loginState is LoginState.Success) {
-                    LaunchedEffect(Unit) { onLoginSuccess() }
+                    LaunchedEffect(loginState) {
+                        onLoginSuccess()
+                        viewModel.resetState()
+                        email = ""
+                        password = ""
+                        showErrors = false
+                    }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Column(

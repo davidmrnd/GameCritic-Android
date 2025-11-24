@@ -12,12 +12,12 @@ import es.ulpgc.gamecritic.ui.EditProfileScreen
 import es.ulpgc.gamecritic.ui.VideogameDetailScreen
 
 @Composable
-fun NavGraph(navController: NavHostController, startDestination: String) {
+fun NavGraph(navController: NavHostController, startDestination: String, onLogout: () -> Unit) {
     NavHost(navController = navController, startDestination = startDestination) {
         composable("home") { HomeScreen(navController = navController) }
         composable("search") { SearchScreen() }
         composable("following") { FollowingScreen() }
-        composable("profile") { ProfileScreen(navController = navController) }
+        composable("profile") { ProfileScreen(navController = navController, onLogout = onLogout) }
         composable("edit_profile") {
             EditProfileScreen(
                 onCancel = { navController.popBackStack() },

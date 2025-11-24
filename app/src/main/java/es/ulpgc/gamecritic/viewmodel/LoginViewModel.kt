@@ -29,4 +29,8 @@ class LoginViewModel(private val repository: AuthRepository = AuthRepository()) 
             }
         }
     }
+
+    fun resetState() {
+        _loginState.value = LoginState.Idle
+    }
 }
