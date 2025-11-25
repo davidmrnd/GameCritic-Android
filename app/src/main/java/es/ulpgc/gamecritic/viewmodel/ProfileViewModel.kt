@@ -19,6 +19,10 @@ class ProfileViewModel : ViewModel() {
     var user by mutableStateOf<User?>(null)
         private set
 
+    // ID del usuario en sesión
+    var currentUid by mutableStateOf<String?>(null)
+        private set
+
     var userComments by mutableStateOf<List<Comment>>(emptyList())
         private set
 
@@ -28,12 +32,41 @@ class ProfileViewModel : ViewModel() {
     var commentsError by mutableStateOf<String?>(null)
         private set
 
+    // Nuevo: si el usuario en sesión sigue al perfil mostrado
+    var isFollowed by mutableStateOf(false)
+        private set
+
+    var isLoadingFollowAction by mutableStateOf(false)
+        private set
+
     init {
         viewModelScope.launch {
             val uid = userRepository.getCurrentUserId()
+            currentUid = uid
             if (uid != null) {
                 user = userRepository.getUserProfile(uid)
                 loadUserComments(uid)
+                isFollowed = false // perfil propio no se marca como seguido
+            }
+        }
+    }
+
+    // Cargar un perfil arbitrario por id (por ejemplo, cuando navegamos al perfil de otro usuario)
+    fun loadProfileById(profileId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                if (currentUid == null) {
+                    currentUid = userRepository.getCurrentUserId()
+                }
+                user = userRepository.getUserProfile(profileId)
+                loadUserComments(profileId)
+                isFollowed = if (currentUid != null && currentUid != profileId) {
+                    userRepository.isFollowing(currentUid!!, profileId)
+                } else {
+                    false
+                }
+            } catch (_: Exception) {
+                // mantener comportamiento silencioso; user seguirá siendo null
             }
         }
     }
@@ -45,9 +78,9 @@ class ProfileViewModel : ViewModel() {
             commentsError = null
             try {
                 userComments = commentRepository.getCommentsForUser(userId)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 userComments = emptyList()
-                commentsError = e.message
+                commentsError = null
             } finally {
                 isLoadingComments = false
             }
@@ -75,6 +108,50 @@ class ProfileViewModel : ViewModel() {
                 }
             } else {
                 onComplete(false)
+            }
+        }
+    }
+
+    // Seguir al usuario mostrado
+    fun follow(onComplete: (Boolean) -> Unit = {}) {
+        val targetId = user?.id ?: run { onComplete(false); return }
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentUid = userRepository.getCurrentUserId()
+            if (currentUid == null) { onComplete(false); return@launch }
+            if (currentUid == targetId) { onComplete(false); return@launch }
+            isLoadingFollowAction = true
+            try {
+                userRepository.followUser(currentUid, targetId)
+                // actualizar estado localmente
+                isFollowed = true
+                // refrescar user para actualizar contadores
+                user = userRepository.getUserProfile(targetId)
+                onComplete(true)
+            } catch (e: Exception) {
+                onComplete(false)
+            } finally {
+                isLoadingFollowAction = false
+            }
+        }
+    }
+
+    // Dejar de seguir al usuario mostrado
+    fun unfollow(onComplete: (Boolean) -> Unit = {}) {
+        val targetId = user?.id ?: run { onComplete(false); return }
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentUid = userRepository.getCurrentUserId()
+            if (currentUid == null) { onComplete(false); return@launch }
+            if (currentUid == targetId) { onComplete(false); return@launch }
+            isLoadingFollowAction = true
+            try {
+                userRepository.unfollowUser(currentUid, targetId)
+                isFollowed = false
+                user = userRepository.getUserProfile(targetId)
+                onComplete(true)
+            } catch (e: Exception) {
+                onComplete(false)
+            } finally {
+                isLoadingFollowAction = false
             }
         }
     }

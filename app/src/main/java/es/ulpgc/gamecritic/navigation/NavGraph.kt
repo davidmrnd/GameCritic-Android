@@ -21,14 +21,16 @@ fun NavGraph(navController: NavHostController, startDestination: String, onLogou
                     navController.navigate("videogame_detail/${game.id}")
                 },
                 onUserClick = { user ->
-                    // Aquí puedes navegar a una pantalla de perfil de otro usuario si la creas más adelante.
-                    // Por ahora, no hay un destino definido para perfiles ajenos.
-                    // Ejemplo futuro: navController.navigate("user_profile/${user.id}")
+                    navController.navigate("user_profile/${user.id}")
                 }
             )
         }
         composable("following") { FollowingScreen() }
         composable("profile") { ProfileScreen(navController = navController, onLogout = onLogout) }
+        composable("user_profile/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")
+            ProfileScreen(navController = navController, onLogout = onLogout, profileId = userId)
+        }
         composable("edit_profile") {
             EditProfileScreen(
                 onCancel = { navController.popBackStack() },

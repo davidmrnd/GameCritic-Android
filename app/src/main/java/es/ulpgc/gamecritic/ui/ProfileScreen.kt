@@ -36,14 +36,23 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import coil.compose.AsyncImage
 import es.ulpgc.gamecritic.model.Comment
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel(),
     navController: NavController? = null,
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    profileId: String? = null // si se pasa, mostramos ese perfil en lugar del propio
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
+
+    // Si se nos pasa profileId, cargar ese perfil
+    LaunchedEffect(profileId) {
+        if (!profileId.isNullOrBlank()) {
+            viewModel.loadProfileById(profileId)
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -114,22 +123,50 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Button(
-                    onClick = { navController?.navigate("edit_profile") },
-                    enabled = navController != null,
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF4D73E)),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Editar usuario", fontWeight = FontWeight.Bold, color = Color.Black)
-                }
-                Button(
-                    onClick = { showLogoutDialog = true },
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Cerrar sesión", fontWeight = FontWeight.Bold, color = Color.Black)
+                // Mostrar Editar/Cerrar sesión solo si el perfil mostrado coincide con el usuario en sesión
+                val isOwnProfile = viewModel.currentUid != null && viewModel.currentUid == viewModel.user?.id
+
+                if (isOwnProfile) {
+                    Button(
+                        onClick = { navController?.navigate("edit_profile") },
+                        enabled = navController != null,
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF4D73E)),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Editar usuario", fontWeight = FontWeight.Bold, color = Color.Black)
+                    }
+                    Button(
+                        onClick = { showLogoutDialog = true },
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Cerrar sesión", fontWeight = FontWeight.Bold, color = Color.Black)
+                    }
+                } else {
+                    // Perfil de otro usuario: mostrar botón seguir / dejar de seguir
+                    if (viewModel.isFollowed) {
+                        Button(
+                            onClick = { viewModel.unfollow() },
+                            enabled = !viewModel.isLoadingFollowAction && viewModel.currentUid != null,
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Dejar de seguir", fontWeight = FontWeight.Bold, color = Color.Black)
+                        }
+                    } else {
+                        Button(
+                            onClick = { viewModel.follow() },
+                            enabled = !viewModel.isLoadingFollowAction && viewModel.currentUid != null,
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF4D73E)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Seguir", fontWeight = FontWeight.Bold, color = Color.Black)
+                        }
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))

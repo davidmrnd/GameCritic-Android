@@ -1,6 +1,7 @@
 package es.ulpgc.gamecritic.repository
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import es.ulpgc.gamecritic.model.User
 import kotlinx.coroutines.tasks.await
@@ -9,9 +10,9 @@ class UserRepository {
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
 
-    suspend fun getCurrentUserId(): String? = auth.currentUser?.uid
+    fun getCurrentUserId(): String? = auth.currentUser?.uid
 
-    suspend fun getCurrentUserEmail(): String? = auth.currentUser?.email
+    fun getCurrentUserEmail(): String? = auth.currentUser?.email
 
     suspend fun getUserProfile(uid: String): User? {
         val doc = firestore.collection("users").document(uid).get().await()
@@ -23,8 +24,8 @@ class UserRepository {
             email = doc.getString("email") ?: "Sin email",
             profileIcon = doc.getString("profileicon") ?: "",
             description = doc.getString("description") ?: "",
-            following = (doc.get("following") as? List<String>) ?: emptyList(),
-            followers = (doc.get("followers") as? List<String>) ?: emptyList()
+            following = (doc.get("following") as? List<*>)?.mapNotNull { it as? String } ?: emptyList(),
+            followers = (doc.get("followers") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
         )
     }
 
@@ -61,12 +62,44 @@ class UserRepository {
                     email = doc.getString("email") ?: "Sin email",
                     profileIcon = doc.getString("profileicon") ?: "",
                     description = doc.getString("description") ?: "",
-                    following = (doc.get("following") as? List<String>) ?: emptyList(),
-                    followers = (doc.get("followers") as? List<String>) ?: emptyList()
+                    following = (doc.get("following") as? List<*>)?.mapNotNull { it as? String } ?: emptyList(),
+                    followers = (doc.get("followers") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
                 )
             } else {
                 null
             }
         }
+    }
+
+    // Añadido: seguir a un usuario (actualiza followers y following en una transacción)
+    suspend fun followUser(currentUid: String, targetUid: String) {
+        if (currentUid == targetUid) return
+        firestore.runTransaction { transaction ->
+            val targetRef = firestore.collection("users").document(targetUid)
+            val currentRef = firestore.collection("users").document(currentUid)
+            // Usar arrayUnion para añadir si no existe
+            transaction.update(targetRef, "followers", FieldValue.arrayUnion(currentUid))
+            transaction.update(currentRef, "following", FieldValue.arrayUnion(targetUid))
+        }.await()
+    }
+
+    // Añadido: dejar de seguir a un usuario
+    suspend fun unfollowUser(currentUid: String, targetUid: String) {
+        if (currentUid == targetUid) return
+        firestore.runTransaction { transaction ->
+            val targetRef = firestore.collection("users").document(targetUid)
+            val currentRef = firestore.collection("users").document(currentUid)
+            transaction.update(targetRef, "followers", FieldValue.arrayRemove(currentUid))
+            transaction.update(currentRef, "following", FieldValue.arrayRemove(targetUid))
+        }.await()
+    }
+
+    // Añadido: comprobar si currentUid sigue a targetUid
+    suspend fun isFollowing(currentUid: String, targetUid: String): Boolean {
+        if (currentUid == targetUid) return false
+        val doc = firestore.collection("users").document(currentUid).get().await()
+        if (!doc.exists()) return false
+        val following = (doc.get("following") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+        return following.contains(targetUid)
     }
 }

@@ -60,5 +60,5 @@ cmake-build-*/
 # .vscode/
 
 # === Firebase configuration file ===
-google-services.json
+app/src/google-services.json
 app/google-services.json
