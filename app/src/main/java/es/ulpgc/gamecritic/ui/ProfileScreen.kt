@@ -2,6 +2,7 @@ package es.ulpgc.gamecritic.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,6 +38,8 @@ import androidx.compose.material3.Surface
 import coil.compose.AsyncImage
 import es.ulpgc.gamecritic.model.Comment
 import androidx.compose.runtime.LaunchedEffect
+import es.ulpgc.gamecritic.viewmodel.UserSummary
+import es.ulpgc.gamecritic.ui.FollowersFollowingDialog
 
 @Composable
 fun ProfileScreen(
@@ -46,6 +49,8 @@ fun ProfileScreen(
     profileId: String? = null // si se pasa, mostramos ese perfil en lugar del propio
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showFollowersDialog by remember { mutableStateOf(false) }
+    var showFollowingDialog by remember { mutableStateOf(false) }
 
     // Si se nos pasa profileId, cargar ese perfil
     LaunchedEffect(profileId) {
@@ -174,17 +179,29 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                // Contador de valoraciones / comentarios del usuario
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable {
+                        // opcional: podríamos navegar o abrir detalle de valoraciones
+                    }
+                ) {
                     Text(
                         text = "Valoraciones",
                         style = MaterialTheme.typography.bodyMedium.copy(color = Color.Black)
                     )
                     Text(
-                        text = "0",
+                        text = viewModel.userComments.size.toString(),
                         style = MaterialTheme.typography.bodyLarge.copy(color = Color.Black)
                     )
                 }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable {
+                        viewModel.loadFollowers(viewModel.user?.id)
+                        showFollowersDialog = true
+                    }
+                ) {
                     Text(
                         text = "Seguidores",
                         style = MaterialTheme.typography.bodyMedium.copy(color = Color.Black)
@@ -194,7 +211,13 @@ fun ProfileScreen(
                         style = MaterialTheme.typography.bodyLarge.copy(color = Color.Black)
                     )
                 }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable {
+                        viewModel.loadFollowing(viewModel.user?.id)
+                        showFollowingDialog = true
+                    }
+                ) {
                     Text(
                         text = "Seguidos",
                         style = MaterialTheme.typography.bodyMedium.copy(color = Color.Black)
@@ -244,6 +267,32 @@ fun ProfileScreen(
                     }
                 },
                 containerColor = Color(0xFFE0E0E0)
+            )
+        }
+
+        if (showFollowersDialog) {
+            FollowersFollowingDialog(
+                title = "Seguidores",
+                users = viewModel.followersList,
+                isLoading = viewModel.isLoadingFollowers,
+                onDismiss = { showFollowersDialog = false },
+                onUserClick = { userId ->
+                    showFollowersDialog = false
+                    navController?.navigate("profile/$userId")
+                }
+            )
+        }
+
+        if (showFollowingDialog) {
+            FollowersFollowingDialog(
+                title = "Seguidos",
+                users = viewModel.followingList,
+                isLoading = viewModel.isLoadingFollowing,
+                onDismiss = { showFollowingDialog = false },
+                onUserClick = { userId ->
+                    showFollowingDialog = false
+                    navController?.navigate("profile/$userId")
+                }
             )
         }
     }

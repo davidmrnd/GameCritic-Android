@@ -11,6 +11,16 @@ import androidx.compose.runtime.setValue
 import es.ulpgc.gamecritic.model.Comment
 import es.ulpgc.gamecritic.repository.CommentRepository
 import kotlinx.coroutines.Dispatchers
+import androidx.compose.runtime.mutableStateListOf
+import kotlinx.coroutines.withContext
+
+// Resumen pequeño de usuario para mostrar en listas de seguidores/seguidos
+data class UserSummary(
+    val id: String,
+    val name: String?,
+    val username: String?,
+    val icon: String?
+)
 
 class ProfileViewModel : ViewModel() {
     private val userRepository = UserRepository()
@@ -37,6 +47,17 @@ class ProfileViewModel : ViewModel() {
         private set
 
     var isLoadingFollowAction by mutableStateOf(false)
+        private set
+
+    // Listas para diálogo de seguidores / seguidos
+    var followersList = mutableStateListOf<UserSummary>()
+        private set
+    var followingList = mutableStateListOf<UserSummary>()
+        private set
+
+    var isLoadingFollowers by mutableStateOf(false)
+        private set
+    var isLoadingFollowing by mutableStateOf(false)
         private set
 
     init {
@@ -67,6 +88,61 @@ class ProfileViewModel : ViewModel() {
                 }
             } catch (_: Exception) {
                 // mantener comportamiento silencioso; user seguirá siendo null
+            }
+        }
+    }
+
+    // Cargar la lista de seguidores (UserSummary) para mostrar en diálogo
+    fun loadFollowers(profileId: String? = user?.id) {
+        val pid = profileId ?: return
+        viewModelScope.launch {
+            isLoadingFollowers = true
+            followersList.clear()
+            try {
+                // obtener perfil para acceder a la lista de ids
+                val profile = withContext(Dispatchers.IO) { userRepository.getUserProfile(pid) }
+                val ids = profile?.followers ?: emptyList()
+                // obtener cada user resumen
+                for (fid in ids) {
+                    try {
+                        val u = withContext(Dispatchers.IO) { userRepository.getUserProfile(fid) }
+                        if (u != null) {
+                            followersList.add(UserSummary(id = u.id, name = u.name, username = u.username, icon = u.profileIcon))
+                        }
+                    } catch (_: Exception) {
+                        // ignorar usuario individual si falla
+                    }
+                }
+            } catch (_: Exception) {
+                // manejar error (silencioso)
+            } finally {
+                isLoadingFollowers = false
+            }
+        }
+    }
+
+    // Cargar la lista de usuarios que sigue el perfil
+    fun loadFollowing(profileId: String? = user?.id) {
+        val pid = profileId ?: return
+        viewModelScope.launch {
+            isLoadingFollowing = true
+            followingList.clear()
+            try {
+                val profile = withContext(Dispatchers.IO) { userRepository.getUserProfile(pid) }
+                val ids = profile?.following ?: emptyList()
+                for (fid in ids) {
+                    try {
+                        val u = withContext(Dispatchers.IO) { userRepository.getUserProfile(fid) }
+                        if (u != null) {
+                            followingList.add(UserSummary(id = u.id, name = u.name, username = u.username, icon = u.profileIcon))
+                        }
+                    } catch (_: Exception) {
+                    }
+                }
+            } catch (_: Exception) {
+
+            } finally {
+                isLoadingFollowing = false
             }
         }
     }
