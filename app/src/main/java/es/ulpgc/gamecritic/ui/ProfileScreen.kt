@@ -38,6 +38,8 @@ import androidx.compose.material3.Surface
 import coil.compose.AsyncImage
 import es.ulpgc.gamecritic.model.Comment
 import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
+import android.net.Uri
 import es.ulpgc.gamecritic.viewmodel.UserSummary
 import es.ulpgc.gamecritic.ui.FollowersFollowingDialog
 
@@ -46,11 +48,14 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel(),
     navController: NavController? = null,
     onLogout: () -> Unit = {},
-    profileId: String? = null // si se pasa, mostramos ese perfil en lugar del propio
+    profileId: String? = null, // si se pasa, mostramos ese perfil en lugar del propio
+    onOpenUserProfile: (String) -> Unit = {}
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showFollowersDialog by remember { mutableStateOf(false) }
     var showFollowingDialog by remember { mutableStateOf(false) }
+    // Usado para navegar de forma segura después de cerrar diálogos
+    var selectedUserToOpen by remember { mutableStateOf<String?>(null) }
 
     // Si se nos pasa profileId, cargar ese perfil
     LaunchedEffect(profileId) {
@@ -277,8 +282,9 @@ fun ProfileScreen(
                 isLoading = viewModel.isLoadingFollowers,
                 onDismiss = { showFollowersDialog = false },
                 onUserClick = { userId ->
+                    // cerrar diálogo y marcar usuario a abrir
                     showFollowersDialog = false
-                    navController?.navigate("profile/$userId")
+                    selectedUserToOpen = userId
                 }
             )
         }
@@ -291,9 +297,25 @@ fun ProfileScreen(
                 onDismiss = { showFollowingDialog = false },
                 onUserClick = { userId ->
                     showFollowingDialog = false
-                    navController?.navigate("profile/$userId")
+                    selectedUserToOpen = userId
                 }
             )
+        }
+
+        // Navegar de forma segura cuando selectedUserToOpen cambie (ya se habrá cerrado el diálogo)
+        LaunchedEffect(selectedUserToOpen) {
+            val id = selectedUserToOpen
+            if (!id.isNullOrBlank()) {
+                try {
+                    // Esperar un momento para que el diálogo termine su animación y se haya cerrado
+                    delay(150)
+                    onOpenUserProfile(id)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    selectedUserToOpen = null
+                }
+            }
         }
     }
 }

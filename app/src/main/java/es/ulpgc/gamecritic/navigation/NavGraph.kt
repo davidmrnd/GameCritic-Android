@@ -26,10 +26,21 @@ fun NavGraph(navController: NavHostController, startDestination: String, onLogou
             )
         }
         composable("following") { FollowingScreen() }
-        composable("profile") { ProfileScreen(navController = navController, onLogout = onLogout) }
+        composable("profile") {
+            ProfileScreen(
+                navController = navController,
+                onLogout = onLogout,
+                onOpenUserProfile = { id -> navController.navigate("user_profile/${id}") }
+            )
+        }
         composable("user_profile/{userId}") { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId")
-            ProfileScreen(navController = navController, onLogout = onLogout, profileId = userId)
+            ProfileScreen(
+                navController = navController,
+                onLogout = onLogout,
+                profileId = userId,
+                onOpenUserProfile = { id -> navController.navigate("user_profile/${id}") }
+            )
         }
         composable("edit_profile") {
             EditProfileScreen(

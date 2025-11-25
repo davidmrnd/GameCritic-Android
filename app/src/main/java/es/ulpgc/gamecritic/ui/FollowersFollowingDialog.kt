@@ -1,7 +1,6 @@
 package es.ulpgc.gamecritic.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -55,7 +54,10 @@ fun FollowersFollowingDialog(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 6.dp)
-                                        .clickable { onUserClick(user.id) },
+                                        .clickable {
+                                            // Notificar al exterior qué usuario fue pulsado; el exterior decidirá cerrar el diálogo y navegar.
+                                            onUserClick(user.id)
+                                        },
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
                                     Row(
@@ -94,4 +96,3 @@ fun FollowersFollowingDialog(
         dismissButton = {}
     )
 }
-
