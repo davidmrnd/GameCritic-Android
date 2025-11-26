@@ -2,6 +2,7 @@ package es.ulpgc.gamecritic.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -54,7 +55,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun VideogameDetailScreen(
     videogameId: String,
     onBack: () -> Unit,
-    onAddComment: (String) -> Unit
+    onAddComment: (String) -> Unit,
+    onOpenUserProfile: (String) -> Unit
 ) {
     val viewModel: VideogameProfileViewModel = viewModel()
     val videogame = viewModel.videogame
@@ -210,7 +212,8 @@ fun VideogameDetailScreen(
                 CommentsSection(
                     comments = comments,
                     isLoading = isLoadingComments,
-                    errorMessage = commentsError
+                    errorMessage = commentsError,
+                    onOpenUserProfile = onOpenUserProfile
                 )
             }
         }
@@ -221,7 +224,8 @@ fun VideogameDetailScreen(
 private fun CommentsSection(
     comments: List<Comment>,
     isLoading: Boolean,
-    errorMessage: String?
+    errorMessage: String?,
+    onOpenUserProfile: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -266,7 +270,9 @@ private fun CommentsSection(
                     modifier = Modifier.heightIn(max = 400.dp)
                 ) {
                     items(comments) { comment ->
-                        CommentCard(comment)
+                        CommentCard(comment = comment, onClick = {
+                            if (comment.userId.isNotBlank()) onOpenUserProfile(comment.userId)
+                        })
                         Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
@@ -276,10 +282,12 @@ private fun CommentsSection(
 }
 
 @Composable
-private fun CommentCard(comment: Comment) {
+private fun CommentCard(comment: Comment, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(

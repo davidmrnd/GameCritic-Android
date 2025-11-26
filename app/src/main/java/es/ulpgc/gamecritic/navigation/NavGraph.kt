@@ -31,7 +31,8 @@ fun NavGraph(navController: NavHostController, startDestination: String, onLogou
             ProfileScreen(
                 navController = navController,
                 onLogout = onLogout,
-                onOpenUserProfile = { id -> navController.navigate("user_profile/${id}") }
+                onOpenUserProfile = { id -> navController.navigate("user_profile/${id}") },
+                onOpenVideogame = { gameId -> navController.navigate("videogame_detail/${gameId}") }
             )
         }
         composable("user_profile/{userId}") { backStackEntry ->
@@ -40,7 +41,8 @@ fun NavGraph(navController: NavHostController, startDestination: String, onLogou
                 navController = navController,
                 onLogout = onLogout,
                 profileId = userId,
-                onOpenUserProfile = { id -> navController.navigate("user_profile/${id}") }
+                onOpenUserProfile = { id -> navController.navigate("user_profile/${id}") },
+                onOpenVideogame = { gameId -> navController.navigate("videogame_detail/${gameId}") }
             )
         }
         composable("edit_profile") {
@@ -54,7 +56,8 @@ fun NavGraph(navController: NavHostController, startDestination: String, onLogou
             VideogameDetailScreen(
                 videogameId = videogameId,
                 onBack = { navController.popBackStack() },
-                onAddComment = { id -> navController.navigate("add_comment/$id") }
+                onAddComment = { id -> navController.navigate("add_comment/$id") },
+                onOpenUserProfile = { userId -> navController.navigate("user_profile/${userId}") }
             )
         }
         composable("add_comment/{videogameId}") { backStackEntry ->

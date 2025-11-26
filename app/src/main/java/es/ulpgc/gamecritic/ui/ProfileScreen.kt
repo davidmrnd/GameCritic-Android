@@ -57,7 +57,8 @@ fun ProfileScreen(
     navController: NavController? = null,
     onLogout: () -> Unit = {},
     profileId: String? = null,
-    onOpenUserProfile: (String) -> Unit = {}
+    onOpenUserProfile: (String) -> Unit = {},
+    onOpenVideogame: (String) -> Unit = {}
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showFollowersDialog by remember { mutableStateOf(false) }
@@ -236,7 +237,10 @@ fun ProfileScreen(
         }
 
         items(viewModel.userComments) { comment ->
-            UserCommentCard(comment = comment)
+            UserCommentCard(
+                comment = comment,
+                onClick = { if (comment.videogameId.isNotBlank()) onOpenVideogame(comment.videogameId) }
+            )
             Spacer(modifier = Modifier.height(16.dp))
         }
 
@@ -343,13 +347,14 @@ private fun ProfileStat(label: String, count: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun UserCommentCard(comment: Comment) {
+private fun UserCommentCard(comment: Comment, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
-            .shadow(4.dp, RoundedCornerShape(16.dp)),
+            .shadow(4.dp, RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
         colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = CardColor)
     ) {
         Row(
