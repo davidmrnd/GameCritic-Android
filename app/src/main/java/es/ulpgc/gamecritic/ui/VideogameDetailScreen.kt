@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,36 +30,43 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import es.ulpgc.gamecritic.model.Comment
+import es.ulpgc.gamecritic.repository.UserRepository
 import es.ulpgc.gamecritic.viewmodel.VideogameProfileViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Surface
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VideogameDetailScreen(
     videogameId: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onAddComment: (String) -> Unit
 ) {
     val viewModel: VideogameProfileViewModel = viewModel()
     val videogame = viewModel.videogame
     val comments = viewModel.comments
     val isLoadingComments = viewModel.isLoadingComments
     val commentsError = viewModel.commentsError
+
+    val userRepository = remember { UserRepository() }
+    val currentUserId = remember { userRepository.getCurrentUserId() }
+    val hasUserComment = remember(comments, currentUserId) {
+        currentUserId != null && comments.any { it.userId == currentUserId }
+    }
 
     LaunchedEffect(videogameId) {
         viewModel.loadVideogame(videogameId)
@@ -183,7 +192,21 @@ fun VideogameDetailScreen(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { onAddComment(videogameId) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF4D73E))
+                ) {
+                    Text(
+                        text = if (hasUserComment) "Editar comentario" else "Añadir comentario",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                 CommentsSection(
                     comments = comments,
                     isLoading = isLoadingComments,

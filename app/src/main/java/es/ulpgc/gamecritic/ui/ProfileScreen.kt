@@ -45,7 +45,6 @@ import es.ulpgc.gamecritic.ui.FollowersFollowingDialog
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.sp
 
-// --- Colores (se mantienen) ---
 val BackgroundColor = Color(0xFFF0ECE3)
 val CardColor = Color.White
 val PrimaryAccent = Color(0xFFF4D73E)
@@ -78,19 +77,15 @@ fun ProfileScreen(
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // --- Sección de Encabezado y Detalles del Perfil ---
         item {
-            // AUMENTAR ESPACIO SUPERIOR
-            Spacer(modifier = Modifier.height(48.dp)) // Aumento de 32dp a 48dp
+            Spacer(modifier = Modifier.height(48.dp))
 
-            // Fila principal: Foto (Izquierda) + Info (Derecha)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.Top
             ) {
-                // 1. FOTO DE PERFIL (IZQUIERDA)
                 val profileImageModifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
@@ -114,9 +109,7 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                // 2. INFORMACIÓN DEL PERFIL (DERECHA)
                 Column(
-                    // ALINEACIÓN AHORA ES START, YA QUE NO ESTAMOS EN UNA CARD
                     horizontalAlignment = Alignment.Start,
                     modifier = Modifier.weight(1f)
                 ) {
@@ -144,19 +137,17 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Contador de Seguidores/Seguidos/Valoraciones (SIN RECUADRO) ---
-            // Se quitó el Surface, solo queda el Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp)
-                    .padding(vertical = 4.dp), // Padding sutil para separar
+                    .padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 ProfileStat(
                     label = "Valoraciones",
                     count = viewModel.userComments.size.toString(),
-                    onClick = { /* Opcional: navegar a la lista de valoraciones */ }
+                    onClick = {}
                 )
                 ProfileStat(
                     label = "Seguidores",
@@ -178,7 +169,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Botones de Acción ---
             val isOwnProfile = viewModel.currentUid != null && viewModel.currentUid == viewModel.user?.id
             Row(
                 modifier = Modifier
@@ -209,7 +199,6 @@ fun ProfileScreen(
                         Text("Cerrar Sesión", fontWeight = FontWeight.Bold)
                     }
                 } else {
-                    // Perfil de otro usuario: mostrar botón seguir / dejar de seguir
                     Button(
                         onClick = { if (viewModel.isFollowed) viewModel.unfollow() else viewModel.follow() },
                         enabled = !viewModel.isLoadingFollowAction && viewModel.currentUid != null,
@@ -236,7 +225,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Título de la sección de comentarios
             Text(
                 text = "Actividad y Comentarios",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -247,13 +235,11 @@ fun ProfileScreen(
             )
         }
 
-        // --- Lista de Comentarios ---
         items(viewModel.userComments) { comment ->
             UserCommentCard(comment = comment)
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // Manejo de estados de la lista de comentarios
         item {
             when {
                 viewModel.isLoadingComments -> {
@@ -284,8 +270,6 @@ fun ProfileScreen(
         }
     }
 
-    // --- Diálogos (sin cambios) ---
-    // ... (Se mantienen los diálogos de Logout, Followers y Following aquí) ...
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
@@ -336,7 +320,6 @@ fun ProfileScreen(
     }
 }
 
-// Componente auxiliar para las estadísticas (SIN CAMBIOS)
 @Composable
 private fun ProfileStat(label: String, count: String, onClick: () -> Unit) {
     Column(
@@ -359,7 +342,6 @@ private fun ProfileStat(label: String, count: String, onClick: () -> Unit) {
     }
 }
 
-// Tarjeta de comentario (SIN CAMBIOS)
 @Composable
 private fun UserCommentCard(comment: Comment) {
     Card(

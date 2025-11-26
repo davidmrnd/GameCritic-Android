@@ -46,6 +46,52 @@ class CommentRepository {
         }.awaitAll()
     }
 
+    suspend fun addComment(
+        userId: String,
+        videogameId: String,
+        rating: Double,
+        content: String
+    ) {
+        val createdAt = Instant.now().toString()
+        val data = hashMapOf(
+            "userId" to userId,
+            "videogameId" to videogameId,
+            "rating" to rating,
+            "content" to content,
+            "createdAt" to createdAt
+        )
+
+        firestore.collection("comments")
+            .add(data)
+            .await()
+    }
+
+    suspend fun getUserCommentForVideogame(userId: String, videogameId: String): Comment? {
+        val snapshot = firestore.collection("comments")
+            .whereEqualTo("userId", userId)
+            .whereEqualTo("videogameId", videogameId)
+            .limit(1)
+            .get()
+            .await()
+
+        val doc = snapshot.documents.firstOrNull() ?: return null
+        val userCache = mutableMapOf<String, DocumentSnapshot?>()
+        val gameCache = mutableMapOf<String, DocumentSnapshot?>()
+        return mapComment(doc, userCache, gameCache)
+    }
+
+    suspend fun updateComment(commentId: String, rating: Double, content: String) {
+        val updates = mapOf(
+            "rating" to rating,
+            "content" to content
+        )
+        firestore.collection("comments").document(commentId).update(updates).await()
+    }
+
+    suspend fun deleteComment(commentId: String) {
+        firestore.collection("comments").document(commentId).delete().await()
+    }
+
     private suspend fun mapComment(
         doc: DocumentSnapshot,
         userCache: MutableMap<String, DocumentSnapshot?>,

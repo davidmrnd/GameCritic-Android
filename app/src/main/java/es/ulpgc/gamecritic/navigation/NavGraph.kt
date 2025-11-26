@@ -10,6 +10,7 @@ import es.ulpgc.gamecritic.ui.FollowingScreen
 import es.ulpgc.gamecritic.ui.ProfileScreen
 import es.ulpgc.gamecritic.ui.EditProfileScreen
 import es.ulpgc.gamecritic.ui.VideogameDetailScreen
+import es.ulpgc.gamecritic.ui.AddCommentScreen
 
 @Composable
 fun NavGraph(navController: NavHostController, startDestination: String, onLogout: () -> Unit) {
@@ -52,7 +53,16 @@ fun NavGraph(navController: NavHostController, startDestination: String, onLogou
             val videogameId = backStackEntry.arguments?.getString("videogameId") ?: return@composable
             VideogameDetailScreen(
                 videogameId = videogameId,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onAddComment = { id -> navController.navigate("add_comment/$id") }
+            )
+        }
+        composable("add_comment/{videogameId}") { backStackEntry ->
+            val videogameId = backStackEntry.arguments?.getString("videogameId") ?: return@composable
+            AddCommentScreen(
+                videogameId = videogameId,
+                onBack = { navController.popBackStack() },
+                onCommentSaved = { navController.popBackStack() }
             )
         }
     }
