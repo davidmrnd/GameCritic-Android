@@ -183,9 +183,24 @@ fun HomeScreen(navController: NavController) {
                                 ),
                                 textAlign = TextAlign.Start
                             )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { navController.navigate("explore") },
+                                shape = RoundedCornerShape(50),
+                                colors = ButtonDefaults.buttonColors(containerColor = MyYellow),
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            ) {
+                                Text(
+                                    text = "Explorar",
+                                    color = TextBlack,
+                                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
                         }
                     }
                 }
+
+                // Encabezado de sección Novedades (barra + título)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(bottom = 0.dp, start = 4.dp)
@@ -204,6 +219,8 @@ fun HomeScreen(navController: NavController) {
                         )
                     )
                 }
+
+                // Carrusel de videojuegos usando VideogameCarousel directamente
                 VideogameCarousel(
                     videogames = videogames,
                     categoryName = "",

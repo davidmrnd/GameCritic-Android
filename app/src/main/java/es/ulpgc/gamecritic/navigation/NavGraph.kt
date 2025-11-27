@@ -11,6 +11,7 @@ import es.ulpgc.gamecritic.ui.ProfileScreen
 import es.ulpgc.gamecritic.ui.EditProfileScreen
 import es.ulpgc.gamecritic.ui.VideogameDetailScreen
 import es.ulpgc.gamecritic.ui.AddCommentScreen
+import es.ulpgc.gamecritic.ui.ExploreScreen
 
 @Composable
 fun NavGraph(navController: NavHostController, startDestination: String, onLogout: () -> Unit) {
@@ -67,6 +68,9 @@ fun NavGraph(navController: NavHostController, startDestination: String, onLogou
                 onBack = { navController.popBackStack() },
                 onCommentSaved = { navController.popBackStack() }
             )
+        }
+        composable("explore") {
+            ExploreScreen(navController = navController)
         }
     }
 }

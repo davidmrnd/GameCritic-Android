@@ -81,4 +81,32 @@ class VideogameRepository {
             }
         }
     }
+
+    suspend fun getVideogamesGroupedByCategory(): Map<String, List<Videogame>> {
+        val snapshot = firestore.collection("videogames").get().await()
+
+        val result = mutableMapOf<String, MutableList<Videogame>>()
+
+        snapshot.documents.forEach { doc ->
+            val categories = doc.get("category") as? List<String> ?: emptyList()
+            if (categories.isEmpty()) return@forEach
+
+            val videogame = Videogame(
+                id = doc.getString("id") ?: doc.id,
+                title = doc.getString("title") ?: "",
+                subtitle = doc.getString("subtitle") ?: "",
+                description = doc.getString("description") ?: "",
+                category = categories,
+                imageCarousel = doc.getString("imagecarousel") ?: "",
+                imageProfile = doc.getString("imageprofile") ?: ""
+            )
+
+            categories.forEach { category ->
+                val list = result.getOrPut(category) { mutableListOf() }
+                list.add(videogame)
+            }
+        }
+
+        return result
+    }
 }
