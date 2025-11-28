@@ -189,6 +189,8 @@ class ProfileViewModel : ViewModel() {
                         userRepository.updateUserProfileImage(uid, it)
                     }
                     user = userRepository.getUserProfile(uid)
+                    editingProfileImageBase64 = user?.profileIcon
+                    loadUserComments(uid)
                     onComplete(true)
                 } catch (e: Exception) {
                     onComplete(false)

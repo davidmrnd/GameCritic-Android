@@ -1,5 +1,6 @@
 package es.ulpgc.gamecritic.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,7 +13,10 @@ import es.ulpgc.gamecritic.ui.EditProfileScreen
 import es.ulpgc.gamecritic.ui.VideogameDetailScreen
 import es.ulpgc.gamecritic.ui.AddCommentScreen
 import es.ulpgc.gamecritic.ui.ExploreScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import es.ulpgc.gamecritic.viewmodel.ProfileViewModel
 
+@SuppressLint("UnrememberedGetBackStackEntry")
 @Composable
 fun NavGraph(navController: NavHostController, startDestination: String, onLogout: () -> Unit) {
     NavHost(navController = navController, startDestination = startDestination) {
@@ -28,8 +32,10 @@ fun NavGraph(navController: NavHostController, startDestination: String, onLogou
             )
         }
         composable("following") { FollowingScreen() }
-        composable("profile") {
+        composable("profile") { backStackEntry ->
+            val profileViewModel: ProfileViewModel = viewModel(viewModelStoreOwner = backStackEntry)
             ProfileScreen(
+                viewModel = profileViewModel,
                 navController = navController,
                 onLogout = onLogout,
                 onOpenUserProfile = { id -> navController.navigate("user_profile/${id}") },
@@ -46,8 +52,11 @@ fun NavGraph(navController: NavHostController, startDestination: String, onLogou
                 onOpenVideogame = { gameId -> navController.navigate("videogame_detail/${gameId}") }
             )
         }
-        composable("edit_profile") {
+        composable("edit_profile") { backStackEntry ->
+            val profileBackStackEntry = navController.getBackStackEntry("profile")
+            val profileViewModel: ProfileViewModel = viewModel(viewModelStoreOwner = profileBackStackEntry)
             EditProfileScreen(
+                viewModel = profileViewModel,
                 onCancel = { navController.popBackStack() },
                 onSave = { navController.popBackStack() }
             )
