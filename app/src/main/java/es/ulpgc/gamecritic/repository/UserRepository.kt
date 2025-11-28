@@ -38,6 +38,15 @@ class UserRepository {
         firestore.collection("users").document(uid).update(updates).await()
     }
 
+    suspend fun updateUserProfileImage(uid: String, base64Image: String?) {
+        val updates = if (base64Image != null) {
+            mapOf("profileicon" to base64Image)
+        } else {
+            mapOf("profileicon" to "")
+        }
+        firestore.collection("users").document(uid).update(updates).await()
+    }
+
     suspend fun searchUsersByQuery(query: String, limit: Long = 50): List<User> {
         val normalizedQuery = query.trim()
         if (normalizedQuery.isEmpty()) return emptyList()

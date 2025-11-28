@@ -60,16 +60,24 @@ class ProfileViewModel : ViewModel() {
     var isLoadingFollowing by mutableStateOf(false)
         private set
 
+    var editingProfileImageBase64 by mutableStateOf<String?>(null)
+        private set
+
     init {
         viewModelScope.launch {
             val uid = userRepository.getCurrentUserId()
             currentUid = uid
             if (uid != null) {
                 user = userRepository.getUserProfile(uid)
+                editingProfileImageBase64 = user?.profileIcon
                 loadUserComments(uid)
                 isFollowed = false // perfil propio no se marca como seguido
             }
         }
+    }
+
+    fun setEditingProfileImage(base64: String?) {
+        editingProfileImageBase64 = base64
     }
 
     // Cargar un perfil arbitrario por id (por ejemplo, cuando navegamos al perfil de otro usuario)
@@ -80,6 +88,7 @@ class ProfileViewModel : ViewModel() {
                     currentUid = userRepository.getCurrentUserId()
                 }
                 user = userRepository.getUserProfile(profileId)
+                editingProfileImageBase64 = user?.profileIcon
                 loadUserComments(profileId)
                 isFollowed = if (currentUid != null && currentUid != profileId) {
                     userRepository.isFollowing(currentUid!!, profileId)
@@ -87,7 +96,6 @@ class ProfileViewModel : ViewModel() {
                     false
                 }
             } catch (_: Exception) {
-                // mantener comportamiento silencioso; user seguirá siendo null
             }
         }
     }
@@ -177,6 +185,9 @@ class ProfileViewModel : ViewModel() {
             if (uid != null) {
                 try {
                     userRepository.updateUserProfile(uid, name, username, description)
+                    editingProfileImageBase64?.let {
+                        userRepository.updateUserProfileImage(uid, it)
+                    }
                     user = userRepository.getUserProfile(uid)
                     onComplete(true)
                 } catch (e: Exception) {
