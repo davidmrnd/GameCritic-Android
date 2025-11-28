@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import androidx.compose.runtime.mutableStateListOf
 import kotlinx.coroutines.withContext
 
-// Resumen pequeño de usuario para mostrar en listas de seguidores/seguidos
 data class UserSummary(
     val id: String,
     val name: String?,
@@ -29,7 +28,6 @@ class ProfileViewModel : ViewModel() {
     var user by mutableStateOf<User?>(null)
         private set
 
-    // ID del usuario en sesión
     var currentUid by mutableStateOf<String?>(null)
         private set
 
@@ -42,14 +40,12 @@ class ProfileViewModel : ViewModel() {
     var commentsError by mutableStateOf<String?>(null)
         private set
 
-    // Nuevo: si el usuario en sesión sigue al perfil mostrado
     var isFollowed by mutableStateOf(false)
         private set
 
     var isLoadingFollowAction by mutableStateOf(false)
         private set
 
-    // Listas para diálogo de seguidores / seguidos
     var followersList = mutableStateListOf<UserSummary>()
         private set
     var followingList = mutableStateListOf<UserSummary>()
@@ -60,19 +56,29 @@ class ProfileViewModel : ViewModel() {
     var isLoadingFollowing by mutableStateOf(false)
         private set
 
+    var editingProfileImageBase64 by mutableStateOf<String?>(null)
+        private set
+
+    var isSavingProfile by mutableStateOf(false)
+        private set
+
     init {
         viewModelScope.launch {
             val uid = userRepository.getCurrentUserId()
             currentUid = uid
             if (uid != null) {
                 user = userRepository.getUserProfile(uid)
+                editingProfileImageBase64 = user?.profileIcon
                 loadUserComments(uid)
-                isFollowed = false // perfil propio no se marca como seguido
+                isFollowed = false
             }
         }
     }
 
-    // Cargar un perfil arbitrario por id (por ejemplo, cuando navegamos al perfil de otro usuario)
+    fun setEditingProfileImage(base64: String?) {
+        editingProfileImageBase64 = base64
+    }
+
     fun loadProfileById(profileId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -80,6 +86,7 @@ class ProfileViewModel : ViewModel() {
                     currentUid = userRepository.getCurrentUserId()
                 }
                 user = userRepository.getUserProfile(profileId)
+                editingProfileImageBase64 = user?.profileIcon
                 loadUserComments(profileId)
                 isFollowed = if (currentUid != null && currentUid != profileId) {
                     userRepository.isFollowing(currentUid!!, profileId)
@@ -87,22 +94,18 @@ class ProfileViewModel : ViewModel() {
                     false
                 }
             } catch (_: Exception) {
-                // mantener comportamiento silencioso; user seguirá siendo null
             }
         }
     }
 
-    // Cargar la lista de seguidores (UserSummary) para mostrar en diálogo
     fun loadFollowers(profileId: String? = user?.id) {
         val pid = profileId ?: return
         viewModelScope.launch {
             isLoadingFollowers = true
             followersList.clear()
             try {
-                // obtener perfil para acceder a la lista de ids
                 val profile = withContext(Dispatchers.IO) { userRepository.getUserProfile(pid) }
                 val ids = profile?.followers ?: emptyList()
-                // obtener cada user resumen
                 for (fid in ids) {
                     try {
                         val u = withContext(Dispatchers.IO) { userRepository.getUserProfile(fid) }
@@ -110,18 +113,15 @@ class ProfileViewModel : ViewModel() {
                             followersList.add(UserSummary(id = u.id, name = u.name, username = u.username, icon = u.profileIcon))
                         }
                     } catch (_: Exception) {
-                        // ignorar usuario individual si falla
                     }
                 }
             } catch (_: Exception) {
-                // manejar error (silencioso)
             } finally {
                 isLoadingFollowers = false
             }
         }
     }
 
-    // Cargar la lista de usuarios que sigue el perfil
     fun loadFollowing(profileId: String? = user?.id) {
         val pid = profileId ?: return
         viewModelScope.launch {
@@ -175,12 +175,28 @@ class ProfileViewModel : ViewModel() {
         viewModelScope.launch {
             val uid = userRepository.getCurrentUserId()
             if (uid != null) {
+                isSavingProfile = true
                 try {
-                    userRepository.updateUserProfile(uid, name, username, description)
-                    user = userRepository.getUserProfile(uid)
+                    userRepository.updateUserProfileWithImage(
+                        uid = uid,
+                        name = name,
+                        username = username,
+                        description = description,
+                        base64Image = editingProfileImageBase64
+                    )
+
+                    user = user?.copy(
+                        name = name,
+                        username = username,
+                        description = description,
+                        profileIcon = editingProfileImageBase64 ?: user?.profileIcon ?: ""
+                    )
+
                     onComplete(true)
                 } catch (e: Exception) {
                     onComplete(false)
+                } finally {
+                    isSavingProfile = false
                 }
             } else {
                 onComplete(false)
@@ -188,7 +204,6 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
-    // Seguir al usuario mostrado
     fun follow(onComplete: (Boolean) -> Unit = {}) {
         val targetId = user?.id ?: run { onComplete(false); return }
         viewModelScope.launch(Dispatchers.IO) {
@@ -198,9 +213,7 @@ class ProfileViewModel : ViewModel() {
             isLoadingFollowAction = true
             try {
                 userRepository.followUser(currentUid, targetId)
-                // actualizar estado localmente
                 isFollowed = true
-                // refrescar user para actualizar contadores
                 user = userRepository.getUserProfile(targetId)
                 onComplete(true)
             } catch (e: Exception) {
@@ -211,7 +224,6 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
-    // Dejar de seguir al usuario mostrado
     fun unfollow(onComplete: (Boolean) -> Unit = {}) {
         val targetId = user?.id ?: run { onComplete(false); return }
         viewModelScope.launch(Dispatchers.IO) {

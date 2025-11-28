@@ -39,11 +39,9 @@ import coil.compose.AsyncImage
 import es.ulpgc.gamecritic.model.Comment
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
-import android.net.Uri
-import es.ulpgc.gamecritic.viewmodel.UserSummary
-import es.ulpgc.gamecritic.ui.FollowersFollowingDialog
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.sp
+import es.ulpgc.gamecritic.util.ImageUtils
 
 val BackgroundColor = Color(0xFFF0ECE3)
 val CardColor = Color.White
@@ -92,9 +90,19 @@ fun ProfileScreen(
                     .clip(CircleShape)
                     .shadow(4.dp, CircleShape)
 
-                if (viewModel.profileIcon.isNotBlank()) {
+                val profileIconData = viewModel.profileIcon
+                val decodedBitmap = ImageUtils.decodeToImageBitmapOrNull(profileIconData)
+
+                if (decodedBitmap != null) {
                     Image(
-                        painter = rememberAsyncImagePainter(viewModel.profileIcon),
+                        bitmap = decodedBitmap,
+                        contentDescription = "Foto de perfil",
+                        modifier = profileImageModifier,
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (profileIconData.isNotBlank()) {
+                    Image(
+                        painter = rememberAsyncImagePainter(profileIconData),
                         contentDescription = "Foto de perfil",
                         modifier = profileImageModifier,
                         contentScale = ContentScale.Crop
