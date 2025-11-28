@@ -204,23 +204,32 @@ fun EditProfileScreen(
                             username.text,
                             description.text
                         ) { success ->
-                            scope.launch {
-                                if (success) {
-                                    snackbarHostState.showSnackbar("Perfil actualizado")
-                                    onSave()
-                                } else {
+                            if (success) {
+                                onSave()
+                            } else {
+                                scope.launch {
                                     snackbarHostState.showSnackbar("Error al guardar")
                                 }
                             }
                         }
                     },
+                    enabled = !viewModel.isSavingProfile,
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF4D73E))
                 ) {
+                    if (viewModel.isSavingProfile) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = Color.Black,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
                     Text("Guardar", fontWeight = FontWeight.Bold)
                 }
                 OutlinedButton(
                     onClick = onCancel,
+                    enabled = !viewModel.isSavingProfile,
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
                 ) {
                     Text("Cancelar")
