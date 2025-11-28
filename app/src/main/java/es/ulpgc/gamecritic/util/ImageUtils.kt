@@ -11,16 +11,17 @@ import android.util.Base64
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import java.io.ByteArrayOutputStream
+import androidx.core.graphics.scale
 
 object ImageUtils {
-    fun bitmapToBase64(bitmap: Bitmap, quality: Int = 80): String {
+    private const val DEFAULT_IMAGE_QUALITY = 80
+    fun bitmapToBase64(bitmap: Bitmap, quality: Int = DEFAULT_IMAGE_QUALITY): String {
         val outputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
         val bytes = outputStream.toByteArray()
         return Base64.encodeToString(bytes, Base64.DEFAULT)
     }
-
-    fun uriToBase64(context: Context, uri: Uri, maxSize: Int = 1024, quality: Int = 80): String? {
+    fun uriToBase64(context: Context, uri: Uri, maxSize: Int = 1024, quality: Int = DEFAULT_IMAGE_QUALITY): String? {
         return try {
             val sourceBitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 val source = ImageDecoder.createSource(context.contentResolver, uri)
@@ -55,7 +56,7 @@ object ImageUtils {
             newWidth = (maxSize * ratio).toInt()
         }
 
-        return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
+        return bitmap.scale(newWidth, newHeight)
     }
 
     fun decodeToImageBitmapOrNull(data: String?): ImageBitmap? {
