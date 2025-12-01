@@ -2,39 +2,53 @@ package es.ulpgc.gamecritic.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
-import es.ulpgc.gamecritic.viewmodel.FollowingViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 import es.ulpgc.gamecritic.model.Comment
+import es.ulpgc.gamecritic.viewmodel.FollowingViewModel
+import es.ulpgc.gamecritic.viewmodel.UserComments
 
 @Composable
 fun FollowingScreen(
+    navController: NavHostController,
     followingViewModel: FollowingViewModel = viewModel()
 ) {
-    val comments by followingViewModel.comments.collectAsState()
-    val grouped by followingViewModel.groupedComments.collectAsState()
+    val userComments by followingViewModel.userComments.collectAsState()
     val isLoading by followingViewModel.isLoading.collectAsState()
     val error by followingViewModel.error.collectAsState()
 
@@ -59,7 +73,7 @@ fun FollowingScreen(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
-            grouped.isEmpty() -> { // Usamos grouped como referencia principal
+            userComments.isEmpty() -> {
                 Text(
                     text = "No hay actividad reciente de tus seguidos.",
                     style = MaterialTheme.typography.bodyLarge,
@@ -71,11 +85,8 @@ fun FollowingScreen(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Cada entrada: un usuario con su carrusel de videojuegos comentados
-                    items(grouped.entries.toList()) { entry ->
-                        val username = entry.key
-                        val userComments = entry.value
-                        UserCarouselItem(username = username, comments = userComments)
+                    items(userComments) { userComment ->
+                        UserCarouselItem(userComment, navController)
                     }
                 }
             }
@@ -84,20 +95,20 @@ fun FollowingScreen(
 }
 
 @Composable
-fun UserCarouselItem(username: String, comments: List<Comment>) {
+fun UserCarouselItem(userComments: UserComments, navController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
-        // Cabecera: avatar (del primer comentario) + username
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            modifier = Modifier
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .clickable { navController.navigate("user_profile/${userComments.userId}") }
         ) {
-            val avatarUrl = comments.firstOrNull()?.userProfileIcon
             Image(
-                painter = rememberAsyncImagePainter(avatarUrl),
+                painter = rememberAsyncImagePainter(userComments.userProfileIcon),
                 contentDescription = "Avatar usuario",
                 modifier = Modifier
                     .size(40.dp)
@@ -106,7 +117,7 @@ fun UserCarouselItem(username: String, comments: List<Comment>) {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "@$username",
+                text = "@${userComments.username}",
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
@@ -114,25 +125,25 @@ fun UserCarouselItem(username: String, comments: List<Comment>) {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Carrusel horizontal de videojuegos comentados por este usuario
         LazyRow(
             contentPadding = PaddingValues(horizontal = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(comments) { comment ->
-                VideoCard(comment)
+            items(userComments.comments) { comment ->
+                VideoCard(comment, navController)
             }
         }
     }
 }
 
 @Composable
-fun VideoCard(comment: Comment) {
+fun VideoCard(comment: Comment, navController: NavHostController) {
     Card(
         modifier = Modifier
             .width(180.dp)
             .height(220.dp)
+            .clickable { comment.videogameId.let { navController.navigate("videogame_detail/$it") } }
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Image(
@@ -145,7 +156,7 @@ fun VideoCard(comment: Comment) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = comment.videogameTitle ?: "Título desconocido",
+                text = comment.videogameTitle,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(horizontal = 8.dp),
                 maxLines = 1,
@@ -153,7 +164,7 @@ fun VideoCard(comment: Comment) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = comment.content ?: "",
+                text = comment.content,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
                     .padding(horizontal = 8.dp)
@@ -163,7 +174,7 @@ fun VideoCard(comment: Comment) {
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = comment.createdAtFormatted ?: "",
+                text = comment.createdAtFormatted,
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 modifier = Modifier.padding(8.dp)
