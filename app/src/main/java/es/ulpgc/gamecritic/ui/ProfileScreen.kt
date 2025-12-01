@@ -25,6 +25,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
@@ -69,6 +73,9 @@ fun ProfileScreen(
         }
     }
 
+    // Determinar si el perfil que vemos es el propio (necesario para mostrar acciones específicas)
+    val isOwnProfile = viewModel.currentUid != null && viewModel.currentUid == viewModel.user?.id
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -77,6 +84,24 @@ fun ProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                if (!isOwnProfile && navController != null) {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .offset(x = (-8).dp)
+                    ) {
+                        Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Volver", tint = Color.Black)
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(48.dp))
 
             Row(
@@ -178,7 +203,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            val isOwnProfile = viewModel.currentUid != null && viewModel.currentUid == viewModel.user?.id
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -322,7 +347,13 @@ fun ProfileScreen(
         if (!id.isNullOrBlank()) {
             try {
                 delay(150)
-                onOpenUserProfile(id)
+                // Si el id seleccionado es el del usuario de sesión, navegar a la ruta "profile" para que el BottomNav se marque correctamente
+                if (id == viewModel.currentUid) {
+                    // Llamar a onOpenUserProfile para navegar a user_profile/{id}; MainActivity detectará que es el uid de sesión y marcará "profile"
+                    onOpenUserProfile(id)
+                } else {
+                    onOpenUserProfile(id)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
