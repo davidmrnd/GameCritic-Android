@@ -20,6 +20,10 @@ class FollowingViewModel : ViewModel() {
     private val _comments = MutableStateFlow<List<Comment>>(emptyList())
     val comments: StateFlow<List<Comment>> = _comments.asStateFlow()
 
+    // Nuevo: agrupación por username (clave simple para identificar al usuario en UI)
+    private val _groupedComments = MutableStateFlow<Map<String, List<Comment>>>(emptyMap())
+    val groupedComments: StateFlow<Map<String, List<Comment>>> = _groupedComments.asStateFlow()
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -46,6 +50,10 @@ class FollowingViewModel : ViewModel() {
                 }
                 val sorted = allComments.sortedByDescending { it.createdAt }.take(20)
                 _comments.value = sorted
+
+                // Nuevo: agrupar por username para mostrar carruseles por usuario
+                _groupedComments.value = sorted.groupBy { it.username ?: "Desconocido" }
+
             } catch (e: Exception) {
                 _error.value = e.message
             } finally {
