@@ -52,23 +52,18 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val currentRoute = remember { mutableStateOf("home") }
 
-                    // Mantener currentRoute observando la entrada actual de la pila de navegación de forma segura
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     LaunchedEffect(navBackStackEntry) {
                         val r = navBackStackEntry?.destination?.route
-                        // Detectar rutas user_profile/{userId} incluso si la route contiene placeholders
                         val userIdArg = navBackStackEntry?.arguments?.getString("userId")
                         val currentUid = auth.currentUser?.uid
                         currentRoute.value = when {
                             r != null && (r == "home" || r == "search" || r == "following" || r == "profile") -> r
-                            // Caso: route puede ser "user_profile/{userId}" o similar; comprobar startsWith y argumento
                             r != null && r.startsWith("user_profile") && userIdArg != null && currentUid != null && userIdArg == currentUid -> "profile"
-                            userIdArg != null && currentUid != null && userIdArg == currentUid -> "profile"
-                            else -> ""
+                            else -> r ?: ""
                         }
                     }
 
-                    // Listener adicional para asegurar que el estado se actualiza al cambiar de destino
                     DisposableEffect(navController) {
                         val listener = NavController.OnDestinationChangedListener { _, destination, arguments ->
                             val r = destination.route
@@ -76,8 +71,8 @@ class MainActivity : ComponentActivity() {
                             val currentUid = auth.currentUser?.uid
                             val newRoute = when {
                                 r != null && (r == "home" || r == "search" || r == "following" || r == "profile") -> r
-                                userIdArg != null && currentUid != null && userIdArg == currentUid -> "profile"
-                                else -> ""
+                                r != null && r.startsWith("user_profile") && userIdArg != null && currentUid != null && userIdArg == currentUid -> "profile"
+                                else -> r ?: ""
                             }
                             currentRoute.value = newRoute
                         }
@@ -94,7 +89,6 @@ class MainActivity : ComponentActivity() {
                     Surface {
                         Column {
                             Box(modifier = Modifier.weight(1f)) {
-                                // startDestination fijo a "home" para evitar problemas al reconfigurar el grafo en caliente
                                 NavGraph(
                                     navController = navController,
                                     startDestination = "home",
@@ -102,10 +96,15 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             BottomNavBar(selectedRoute = currentRoute.value) { route ->
-                                // No establecer currentRoute aquí; se actualiza desde currentBackStackEntryAsState
                                 if (route == "profile") {
-                                    // Navegar directamente al perfil propio (siempre)
                                     navController.navigate("profile") {
+                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                } else if (route == "following") {
+                                    navController.navigate("following") {
+                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
                                         launchSingleTop = true
                                         restoreState = true
                                     }

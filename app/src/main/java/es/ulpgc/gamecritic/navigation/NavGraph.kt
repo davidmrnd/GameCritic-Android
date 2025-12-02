@@ -31,7 +31,7 @@ fun NavGraph(navController: NavHostController, startDestination: String, onLogou
                 }
             )
         }
-        composable("following") { FollowingScreen() }
+        composable("following") { FollowingScreen(navController = navController) }
         composable("profile") { backStackEntry ->
             val profileViewModel: ProfileViewModel = viewModel(viewModelStoreOwner = backStackEntry)
             ProfileScreen(
