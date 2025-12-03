@@ -42,6 +42,7 @@ import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import es.ulpgc.gamecritic.model.Comment
 import es.ulpgc.gamecritic.repository.UserRepository
+import es.ulpgc.gamecritic.util.ImageUtils
 import es.ulpgc.gamecritic.viewmodel.VideogameProfileViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -296,12 +297,22 @@ private fun CommentCard(comment: Comment, onClick: () -> Unit) {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Surface(shape = CircleShape, color = Color.LightGray) {
-                        AsyncImage(
-                            model = comment.userProfileIcon,
-                            contentDescription = comment.username,
-                            modifier = Modifier.size(36.dp),
-                            contentScale = ContentScale.Crop
-                        )
+                        val decodedBitmap = ImageUtils.decodeToImageBitmapOrNull(comment.userProfileIcon)
+                        if (decodedBitmap != null) {
+                            Image(
+                                bitmap = decodedBitmap,
+                                contentDescription = comment.username,
+                                modifier = Modifier.size(36.dp),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            AsyncImage(
+                                model = comment.userProfileIcon,
+                                contentDescription = comment.username,
+                                modifier = Modifier.size(36.dp),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {

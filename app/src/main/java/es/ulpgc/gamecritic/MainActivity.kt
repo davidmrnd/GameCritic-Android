@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
@@ -17,7 +18,8 @@ import es.ulpgc.gamecritic.ui.LoginScreen
 import es.ulpgc.gamecritic.ui.RegisterScreen
 import es.ulpgc.gamecritic.ui.components.BottomNavBar
 import es.ulpgc.gamecritic.ui.theme.GameCriticTheme
-import androidx.navigation.NavController
+import es.ulpgc.gamecritic.viewmodel.ProfileViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,7 +67,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     DisposableEffect(navController) {
-                        val listener = NavController.OnDestinationChangedListener { _, destination, arguments ->
+                        val listener = NavController.OnDestinationChangedListener { controller: NavController, destination, arguments ->
                             val r = destination.route
                             val userIdArg = arguments?.getString("userId")
                             val currentUid = auth.currentUser?.uid
@@ -86,6 +88,9 @@ class MainActivity : ComponentActivity() {
                         showRegister = false
                     }
 
+                    val profileViewModel: ProfileViewModel = viewModel(key = auth.currentUser?.uid ?: "")
+                    val profileIcon = profileViewModel.profileIcon
+
                     Surface {
                         Column {
                             Box(modifier = Modifier.weight(1f)) {
@@ -95,7 +100,7 @@ class MainActivity : ComponentActivity() {
                                     onLogout = onLogout
                                 )
                             }
-                            BottomNavBar(selectedRoute = currentRoute.value) { route ->
+                            BottomNavBar(selectedRoute = currentRoute.value, onItemSelected = { route ->
                                 if (route == "profile") {
                                     navController.navigate("profile") {
                                         popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -115,7 +120,7 @@ class MainActivity : ComponentActivity() {
                                         restoreState = true
                                     }
                                 }
-                            }
+                            }, profileIcon = profileIcon)
                         }
                     }
                 }
