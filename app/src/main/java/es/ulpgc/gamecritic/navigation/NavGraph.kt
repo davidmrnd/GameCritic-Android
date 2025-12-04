@@ -14,8 +14,8 @@ import es.ulpgc.gamecritic.ui.VideogameDetailScreen
 import es.ulpgc.gamecritic.ui.AddCommentScreen
 import es.ulpgc.gamecritic.ui.ExploreScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
+import es.ulpgc.gamecritic.model.SearchTab
 import es.ulpgc.gamecritic.viewmodel.ProfileViewModel
-import es.ulpgc.gamecritic.viewmodel.SearchTab
 
 @SuppressLint("UnrememberedGetBackStackEntry")
 @Composable

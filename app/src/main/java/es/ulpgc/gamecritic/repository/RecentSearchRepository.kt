@@ -3,7 +3,7 @@ package es.ulpgc.gamecritic.repository
 import es.ulpgc.gamecritic.data.local.search.RecentSearchDao
 import es.ulpgc.gamecritic.data.local.search.RecentSearchEntity
 import es.ulpgc.gamecritic.model.RecentSearch
-import es.ulpgc.gamecritic.viewmodel.SearchTab
+import es.ulpgc.gamecritic.model.SearchTab
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

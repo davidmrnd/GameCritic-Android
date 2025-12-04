@@ -18,15 +18,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-enum class SearchTab { VIDEOGAMES, USERS }
-
 data class SearchState(
     val query: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
     val videogames: List<Videogame> = emptyList(),
     val users: List<User> = emptyList(),
-    val activeTab: SearchTab = SearchTab.VIDEOGAMES,
+    val activeTab: es.ulpgc.gamecritic.model.SearchTab = es.ulpgc.gamecritic.model.SearchTab.VIDEOGAMES,
     val recentSearches: List<RecentSearch> = emptyList()
 )
 
@@ -67,7 +65,7 @@ class SearchViewModel(
         triggerSearchIfNeeded()
     }
 
-    fun onTabSelected(tab: SearchTab) {
+    fun onTabSelected(tab: es.ulpgc.gamecritic.model.SearchTab) {
         uiState = uiState.copy(activeTab = tab)
     }
 
@@ -130,15 +128,19 @@ class SearchViewModel(
 class SearchViewModelFactory(
     private val context: android.content.Context
 ) : ViewModelProvider.Factory {
+    private val videogameRepository: VideogameRepository = VideogameRepository()
+    private val userRepository: UserRepository = UserRepository()
+    private val recentSearchRepository: RecentSearchRepository by lazy {
+        val db = AppDatabase.getInstance(context)
+        RecentSearchRepository(db.recentSearchDao())
+    }
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(SearchViewModel::class.java)) {
-            val db = AppDatabase.getInstance(context)
-            val recentRepo = RecentSearchRepository(db.recentSearchDao())
             return SearchViewModel(
-                videogameRepository = VideogameRepository(),
-                userRepository = UserRepository(),
-                recentSearchRepository = recentRepo
+                videogameRepository = videogameRepository,
+                userRepository = userRepository,
+                recentSearchRepository = recentSearchRepository
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

@@ -50,10 +50,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import es.ulpgc.gamecritic.model.RecentSearch
+import es.ulpgc.gamecritic.model.SearchTab
 import es.ulpgc.gamecritic.model.User
 import es.ulpgc.gamecritic.model.Videogame
 import es.ulpgc.gamecritic.viewmodel.SearchState
-import es.ulpgc.gamecritic.viewmodel.SearchTab
 import es.ulpgc.gamecritic.viewmodel.SearchViewModel
 import es.ulpgc.gamecritic.viewmodel.SearchViewModelFactory
 import es.ulpgc.gamecritic.util.ImageUtils

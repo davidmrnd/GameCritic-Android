@@ -10,7 +10,7 @@ import es.ulpgc.gamecritic.data.local.search.RecentSearchEntity
 @Database(
     entities = [RecentSearchEntity::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
 
