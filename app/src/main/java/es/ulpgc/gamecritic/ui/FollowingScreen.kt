@@ -19,8 +19,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.StarHalf
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +48,9 @@ import es.ulpgc.gamecritic.model.Comment
 import es.ulpgc.gamecritic.viewmodel.FollowingViewModel
 import es.ulpgc.gamecritic.viewmodel.UserComments
 
+private val LightBackground = Color(0xFFF0ECE3)
+private val StarColor = Color(0xFFD4B20C)
+
 @Composable
 fun FollowingScreen(
     navController: NavHostController,
@@ -59,7 +67,7 @@ fun FollowingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF0ECE3))
+            .background(LightBackground)
             .padding(8.dp)
     ) {
         when {
@@ -109,7 +117,7 @@ fun UserCarouselItem(userComments: UserComments, navController: NavHostControlle
         ) {
             Image(
                 painter = rememberAsyncImagePainter(userComments.userProfileIcon),
-                contentDescription = "Avatar usuario",
+                contentDescription = null,
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape),
@@ -140,21 +148,23 @@ fun UserCarouselItem(userComments: UserComments, navController: NavHostControlle
 @Composable
 fun VideoCard(comment: Comment, navController: NavHostController) {
     Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         modifier = Modifier
             .width(180.dp)
-            .height(220.dp)
+            .height(245.dp)
             .clickable { comment.videogameId.let { navController.navigate("videogame_detail/$it") } }
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Image(
                 painter = rememberAsyncImagePainter(comment.videogameImage),
-                contentDescription = "Imagen videojuego",
+                contentDescription = null,
                 modifier = Modifier
-                    .height(130.dp)
+                    .height(115.dp)
                     .fillMaxWidth(),
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = comment.videogameTitle,
                 fontWeight = FontWeight.SemiBold,
@@ -162,7 +172,14 @@ fun VideoCard(comment: Comment, navController: NavHostController) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(4.dp))
+
+            ReadOnlyRatingBar(
+                rating = comment.rating,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
             Text(
                 text = comment.content,
                 style = MaterialTheme.typography.bodyMedium,
@@ -172,12 +189,37 @@ fun VideoCard(comment: Comment, navController: NavHostController) {
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(6.dp))
+
             Text(
                 text = comment.createdAtFormatted,
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 modifier = Modifier.padding(8.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ReadOnlyRatingBar(
+    rating: Double,
+    modifier: Modifier = Modifier
+) {
+    Row(modifier = modifier) {
+        (1..5).forEach { index ->
+            val icon = when {
+                rating >= index -> Icons.Filled.Star
+                rating >= index - 0.5 -> Icons.AutoMirrored.Filled.StarHalf
+                else -> Icons.Filled.Star
+            }
+
+            val tint = if (rating >= index - 0.5) StarColor else Color.LightGray.copy(alpha = 0.5f)
+
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.size(16.dp)
             )
         }
     }

@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 data class AddCommentUiState(
     val videogameId: String = "",
-    val rating: Int = 0,
+    val rating: Double = 0.0,
     val content: String = "",
     val ratingError: String? = null,
     val contentError: String? = null,
@@ -40,7 +40,7 @@ class AddCommentViewModel : ViewModel() {
                     val comment: Comment? = commentRepository.getUserCommentForVideogame(userId, id)
                     if (comment != null) {
                         _uiState.value = _uiState.value.copy(
-                            rating = comment.rating.toInt(),
+                            rating = comment.rating.toDouble(),
                             content = comment.content,
                             isEditMode = true,
                             existingCommentId = comment.id,
@@ -63,7 +63,7 @@ class AddCommentViewModel : ViewModel() {
         }
     }
 
-    fun onRatingChange(rating: Int) {
+    fun onRatingChange(rating: Double) {
         _uiState.value = _uiState.value.copy(rating = rating, ratingError = null)
     }
 
@@ -76,7 +76,7 @@ class AddCommentViewModel : ViewModel() {
         var ratingError: String? = null
         var contentError: String? = null
 
-        if (current.rating < 1 || current.rating > 5) {
+        if (current.rating !in 1.0..5.0) {
             ratingError = "Selecciona una puntuación entre 1 y 5 estrellas"
         }
         if (current.content.isBlank() || current.content.length < 10) {

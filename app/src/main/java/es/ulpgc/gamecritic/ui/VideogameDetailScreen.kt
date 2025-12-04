@@ -1,8 +1,10 @@
 package es.ulpgc.gamecritic.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,46 +12,60 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import es.ulpgc.gamecritic.model.Comment
 import es.ulpgc.gamecritic.repository.UserRepository
 import es.ulpgc.gamecritic.util.ImageUtils
 import es.ulpgc.gamecritic.viewmodel.VideogameProfileViewModel
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.lifecycle.viewmodel.compose.viewModel
+
+
+private val LightBackground = Color(0xFFF0ECE3)
+private val LightSurface = Color(0xFFFFFFFF)
+private val TextBlack = Color(0xFF111827)
+private val TextDarkGray = Color(0xFF4B5563)
+private val MyYellow = Color(0xFFF4D73E)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,146 +92,202 @@ fun VideogameDetailScreen(
         viewModel.loadComments(videogameId)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF0ECE3))
-    ) {
-        TopAppBar(
-            title = {
-                Text(
-                    text = videogame?.title ?: "Detalle del videojuego",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.Black
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Surface(
-                        shape = CircleShape,
-                        color = Color(0xFFF4D73E)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = Color.Black,
-                            modifier = Modifier.padding(4.dp)
-                        )
-                    }
-                }
-            },
-            colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                containerColor = Color(0xFFE0E0E0)
-            )
-        )
-
+    Scaffold(
+        containerColor = LightBackground
+    ) { paddingValues ->
         if (videogame == null) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Cargando...",
-                    style = MaterialTheme.typography.bodyLarge.copy(color = Color.Gray)
-                )
+                CircularProgressIndicator(color = MyYellow)
             }
         } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Box(
+            
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(220.dp)
-                        .background(Color(0xFFB3B3B3))
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(bottom = 80.dp) 
                 ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(videogame.imageProfile),
-                        contentDescription = videogame.title,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-                Surface(
-                    shape = RoundedCornerShape(24.dp),
-                    color = Color(0xFFE0E0E0),
-                    shadowElevation = 8.dp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .offset(y = (-32).dp)
-                ) {
-                    Column(
+                    
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp)
+                            .height(300.dp) 
                     ) {
-                        Text(
-                            text = videogame.title,
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = Color.Black,
-                            modifier = Modifier.padding(bottom = 4.dp)
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(videogame.imageProfile)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = videogame.title,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
-                        Text(
-                            text = videogame.subtitle,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color(0xFF666666),
-                            modifier = Modifier.padding(bottom = 12.dp)
+                        
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                                .align(Alignment.BottomCenter)
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.4f))
+                                    )
+                                )
                         )
-                        if (videogame.category.isNotEmpty()) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(bottom = 12.dp)
-                            ) {
-                                videogame.category.forEach { cat ->
-                                    Surface(
-                                        shape = RoundedCornerShape(50),
-                                        color = Color(0xFFF4D73E),
-                                        modifier = Modifier.padding(end = 8.dp)
-                                    ) {
-                                        Text(
-                                            text = cat,
-                                            color = Color.Black,
-                                            style = MaterialTheme.typography.labelMedium,
-                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                                        )
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .offset(y = (-40).dp) 
+                            .shadow(
+                                elevation = 8.dp,
+                                shape = RoundedCornerShape(16.dp),
+                                spotColor = MyYellow.copy(alpha = 0.4f) 
+                            ),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = LightSurface)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp)
+                        ) {
+                            
+                            if (videogame.category.isNotEmpty()) {
+                                Row(
+                                    modifier = Modifier.padding(bottom = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    videogame.category.take(3).forEach { cat ->
+                                        Surface(
+                                            shape = RoundedCornerShape(50),
+                                            color = MyYellow.copy(alpha = 0.2f),
+                                            border = BorderStroke(1.dp, MyYellow),
+                                            modifier = Modifier.padding(end = 6.dp)
+                                        ) {
+                                            Text(
+                                                text = cat.uppercase(),
+                                                color = TextBlack,
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 10.sp
+                                                ),
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
+
+                            Text(
+                                text = videogame.title,
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = TextBlack
+                                ),
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                            Text(
+                                text = videogame.subtitle,
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Medium,
+                                    color = TextDarkGray
+                                ),
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+                            HorizontalDivider(color = Color(0xFFE5E7EB))
+
+                            Text(
+                                text = "Sinopsis",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
+                            )
+                            Text(
+                                text = videogame.description,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = TextBlack.copy(alpha = 0.8f),
+                                    lineHeight = 22.sp
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            
+                            Button(
+                                onClick = { onAddComment(videogameId) },
+                                modifier = Modifier.fillMaxWidth().height(48.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MyYellow),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (hasUserComment) Icons.Outlined.Edit else Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = TextBlack,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (hasUserComment) "EDITAR MI RESEÑA" else "VALORAR ESTE JUEGO",
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextBlack
+                                )
+                            }
                         }
-                        Text(
-                            text = videogame.description,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color.Black,
-                            modifier = Modifier.padding(top = 8.dp)
+                    }
+                    
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .offset(y = (-20).dp)
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(4.dp)
+                                    .height(24.dp)
+                                    .background(MyYellow, RoundedCornerShape(2.dp))
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Reseñas de la comunidad",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextBlack
+                                )
+                            )
+                        }
+                        CommentsSection(
+                            comments = comments,
+                            isLoading = isLoadingComments,
+                            errorMessage = commentsError,
+                            onOpenUserProfile = onOpenUserProfile
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = { onAddComment(videogameId) },
+
+                IconButton(
+                    onClick = onBack,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF4D73E))
+                        .padding(top = 40.dp, start = 16.dp) 
+                        .align(Alignment.TopStart)
+                        .shadow(4.dp, CircleShape)
+                        .background(LightSurface, CircleShape)
+                        .size(40.dp)
                 ) {
-                    Text(
-                        text = if (hasUserComment) "Editar comentario" else "Añadir comentario",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Volver",
+                        tint = TextBlack
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                CommentsSection(
-                    comments = comments,
-                    isLoading = isLoadingComments,
-                    errorMessage = commentsError,
-                    onOpenUserProfile = onOpenUserProfile
-                )
             }
         }
     }
@@ -228,54 +300,50 @@ private fun CommentsSection(
     errorMessage: String?,
     onOpenUserProfile: (String) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    ) {
-        Text(
-            text = "Comentarios",
-            style = MaterialTheme.typography.titleLarge,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        when {
-            isLoading -> {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    CircularProgressIndicator()
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text("Cargando comentarios…")
+    when {
+        isLoading -> {
+            Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = MyYellow)
+            }
+        }
+        errorMessage != null -> {
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+        comments.isEmpty() -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = Color.Gray.copy(alpha = 0.3f),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Sé el primero en opinar",
+                        style = MaterialTheme.typography.bodyMedium.copy(color = TextDarkGray),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
-            errorMessage != null -> {
-                Text(
-                    text = errorMessage,
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-            comments.isEmpty() -> {
-                Text(
-                    text = "Este videojuego todavía no tiene comentarios.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
-                )
-            }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier.heightIn(max = 400.dp)
-                ) {
-                    items(comments) { comment ->
-                        CommentCard(comment = comment, onClick = {
-                            if (comment.userId.isNotBlank()) onOpenUserProfile(comment.userId)
-                        })
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
+        }
+        else -> {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                comments.forEach { comment ->
+                    CommentCard(
+                        comment = comment,
+                        onClick = { if (comment.userId.isNotBlank()) onOpenUserProfile(comment.userId) }
+                    )
                 }
             }
         }
@@ -285,61 +353,86 @@ private fun CommentsSection(
 @Composable
 private fun CommentCard(comment: Comment, onClick: () -> Unit) {
     Card(
-        shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
+            .shadow(
+                elevation = 2.dp,
+                shape = RoundedCornerShape(12.dp),
+                spotColor = TextDarkGray.copy(alpha = 0.1f)
+            ),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = LightSurface),
+        border = BorderStroke(1.dp, Color(0xFFE5E7EB)) 
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically 
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(shape = CircleShape, color = Color.LightGray) {
-                        val decodedBitmap = ImageUtils.decodeToImageBitmapOrNull(comment.userProfileIcon)
-                        if (decodedBitmap != null) {
-                            Image(
-                                bitmap = decodedBitmap,
-                                contentDescription = comment.username,
-                                modifier = Modifier.size(36.dp),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            AsyncImage(
-                                model = comment.userProfileIcon,
-                                contentDescription = comment.username,
-                                modifier = Modifier.size(36.dp),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = comment.username.ifBlank { "Usuario desconocido" },
-                            style = MaterialTheme.typography.titleSmall,
-                            color = Color.Black
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFE5E7EB))
+                ) {
+                    val decodedBitmap = ImageUtils.decodeToImageBitmapOrNull(comment.userProfileIcon)
+                    if (decodedBitmap != null) {
+                        Image(
+                            bitmap = decodedBitmap,
+                            contentDescription = comment.username,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
-                        Text(
-                            text = comment.createdAtFormatted.ifBlank { comment.createdAt },
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color(0xFF666666)
+                    } else {
+                        AsyncImage(
+                            model = comment.userProfileIcon,
+                            contentDescription = comment.username,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
                     }
                 }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = "★ ${comment.rating}",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Color(0xFFF4D73E)
-                )
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = comment.username.ifBlank { "Usuario desconocido" },
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = TextBlack)
+                    )
+                    Text(
+                        text = comment.createdAtFormatted.ifBlank { comment.createdAt },
+                        style = MaterialTheme.typography.labelSmall.copy(color = TextDarkGray)
+                    )
+                }
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MyYellow.copy(alpha = 0.2f),
+                    border = BorderStroke(1.dp, MyYellow)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = Color(0xFFD4B20C), 
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = comment.rating.toString(),
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = TextBlack)
+                        )
+                    }
+                }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
             Text(
                 text = comment.content,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Black
+                style = MaterialTheme.typography.bodyMedium.copy(color = TextBlack, lineHeight = 20.sp)
             )
         }
     }

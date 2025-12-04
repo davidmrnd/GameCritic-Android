@@ -5,51 +5,45 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import es.ulpgc.gamecritic.util.ImageUtils
 import es.ulpgc.gamecritic.viewmodel.ProfileViewModel
 import kotlinx.coroutines.launch
+
+private val LightBackground = Color(0xFFF0ECE3)
+private val LightSurface = Color(0xFFFFFFFF)
+private val TextBlack = Color(0xFF111827)
+private val TextDarkGray = Color(0xFF4B5563)
+private val MyYellow = Color(0xFFF4D73E)
+private val MyYellowDark = Color(0xFFF4D73E)
 
 @Composable
 fun EditProfileScreen(
@@ -64,13 +58,12 @@ fun EditProfileScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var showImageSourceDialog by remember { mutableStateOf(false) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
             uri?.let {
-                selectedImageUri = it
                 val base64 = ImageUtils.uriToBase64(context, it)
                 viewModel.setEditingProfileImage(base64)
             }
@@ -90,11 +83,8 @@ fun EditProfileScreen(
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
-            if (isGranted) {
-                cameraLauncher.launch(null)
-            } else {
-                scope.launch { snackbarHostState.showSnackbar("Permiso de cámara denegado") }
-            }
+            if (isGranted) cameraLauncher.launch(null)
+            else scope.launch { snackbarHostState.showSnackbar("Permiso de cámara denegado") }
         }
     )
 
@@ -104,150 +94,255 @@ fun EditProfileScreen(
         description = TextFieldValue(user?.description ?: "")
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF0ECE3)),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
+    Scaffold(
+        containerColor = LightBackground,
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Box(
             modifier = Modifier
-                .width(375.dp)
-                .padding(40.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
-            Text("Editar Perfil", style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            val currentImageBase64 = viewModel.editingProfileImageBase64 ?: user?.profileIcon
-
             Box(
                 modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .background(Color.LightGray)
-                    .clickable { },
-                contentAlignment = Alignment.Center
-            ) {
-                val imageBitmap = remember(currentImageBase64) {
-                    ImageUtils.decodeToImageBitmapOrNull(currentImageBase64)
-                }
-
-                when {
-                    imageBitmap != null -> {
-                        androidx.compose.foundation.Image(
-                            bitmap = imageBitmap,
-                            contentDescription = "Foto de perfil",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(MyYellow, MyYellowDark),
+                            startY = 0f,
+                            endY = 1000f
                         )
-                    }
-                    !currentImageBase64.isNullOrBlank() -> {
-                        AsyncImage(
-                            model = currentImageBase64,
-                            contentDescription = "Foto de perfil",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                    )
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(60.dp))
+
+                Text(
+                    text = "EDITAR PERFIL",
+                    style = MaterialTheme.typography.displaySmall.copy(
+                        fontWeight = FontWeight.Black,
+                        color = TextBlack,
+                        letterSpacing = (-0.5).sp
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                        .padding(bottom = 24.dp)
+                )
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            spotColor = TextDarkGray.copy(alpha = 0.2f)
+                        ),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = LightSurface)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clickable { showImageSourceDialog = true }
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFE5E7EB))
+                                    .shadow(4.dp, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                val currentImageBase64 = viewModel.editingProfileImageBase64 ?: user?.profileIcon
+                                val imageBitmap = remember(currentImageBase64) {
+                                    ImageUtils.decodeToImageBitmapOrNull(currentImageBase64)
+                                }
+
+                                when {
+                                    imageBitmap != null -> Image(
+                                        bitmap = imageBitmap,
+                                        contentDescription = "Avatar",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    !currentImageBase64.isNullOrBlank() -> AsyncImage(
+                                        model = currentImageBase64,
+                                        contentDescription = "Avatar",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    else -> Icon(
+                                        Icons.Default.Person,
+                                        contentDescription = null,
+                                        tint = TextDarkGray,
+                                        modifier = Modifier.size(40.dp)
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MyYellow)
+                                    .padding(8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Cambiar foto",
+                                    tint = TextBlack,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        StyledTextField(
+                            value = name,
+                            onValueChange = { name = it },
+                            label = "Nombre"
                         )
-                    }
-                    else -> {
-                        Text("Sin foto")
-                    }
-                }
-            }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        StyledTextField(
+                            value = username,
+                            onValueChange = { username = it },
+                            label = "Usuario (@)"
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        StyledTextField(
+                            value = description,
+                            onValueChange = { description = it },
+                            label = "Descripción",
+                            singleLine = false,
+                            maxLines = 4
+                        )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(32.dp))
 
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedButton(onClick = {
-                    galleryLauncher.launch("image/*")
-                }) {
-                    Text("Galería")
-                }
-                OutlinedButton(onClick = {
-                    val permission = Manifest.permission.CAMERA
-                    val hasPermission = ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
-                    if (hasPermission) {
-                        cameraLauncher.launch(null)
-                    } else {
-                        cameraPermissionLauncher.launch(permission)
-                    }
-                }) {
-                    Text("Cámara")
-                }
-            }
+                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            OutlinedButton(
+                                onClick = onCancel,
+                                enabled = !viewModel.isSavingProfile,
+                                shape = RoundedCornerShape(12.dp),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, TextDarkGray),
+                                modifier = Modifier.weight(1f).height(50.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = TextBlack)
+                            ) {
+                                Text("Cancelar", fontWeight = FontWeight.SemiBold)
+                            }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nombre") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Username") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                label = { Text("Descripción") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Button(
-                    onClick = {
-                        viewModel.editProfile(
-                            name.text,
-                            username.text,
-                            description.text
-                        ) { success ->
-                            if (success) {
-                                onSave()
-                            } else {
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("Error al guardar")
+                            Button(
+                                onClick = {
+                                    viewModel.editProfile(name.text, username.text, description.text) { success ->
+                                        if (success) onSave()
+                                        else scope.launch { snackbarHostState.showSnackbar("Error al guardar cambios") }
+                                    }
+                                },
+                                enabled = !viewModel.isSavingProfile,
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MyYellow,
+                                    disabledContainerColor = MyYellow.copy(alpha = 0.5f)
+                                ),
+                                modifier = Modifier.weight(1f).height(50.dp)
+                            ) {
+                                if (viewModel.isSavingProfile) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        color = TextBlack,
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    Text("Guardar", color = TextBlack, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
-                    },
-                    enabled = !viewModel.isSavingProfile,
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF4D73E))
-                ) {
-                    if (viewModel.isSavingProfile) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.Black,
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
                     }
-                    Text("Guardar", fontWeight = FontWeight.Bold)
                 }
-                OutlinedButton(
-                    onClick = onCancel,
-                    enabled = !viewModel.isSavingProfile,
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
-                ) {
-                    Text("Cancelar")
-                }
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-            SnackbarHost(hostState = snackbarHostState)
+
+        if (showImageSourceDialog) {
+            AlertDialog(
+                onDismissRequest = { showImageSourceDialog = false },
+                containerColor = LightSurface,
+                title = { Text("Cambiar foto de perfil", fontWeight = FontWeight.Bold, color = TextBlack) },
+                text = {
+                    Column {
+                        ListItem(
+                            headlineContent = { Text("Tomar foto", color = TextBlack) },
+                            leadingContent = { Icon(Icons.Default.Person, null, tint = MyYellow) },
+                            modifier = Modifier.clickable {
+                                showImageSourceDialog = false
+                                val permission = Manifest.permission.CAMERA
+                                if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
+                                    cameraLauncher.launch(null)
+                                } else {
+                                    cameraPermissionLauncher.launch(permission)
+                                }
+                            }
+                        )
+                        ListItem(
+                            headlineContent = { Text("Elegir de galería", color = TextBlack) },
+                            leadingContent = { Icon(Icons.Default.List, null, tint = MyYellow) },
+                            modifier = Modifier.clickable {
+                                showImageSourceDialog = false
+                                galleryLauncher.launch("image/*")
+                            }
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showImageSourceDialog = false }) {
+                        Text("Cancelar", color = TextDarkGray)
+                    }
+                }
+            )
         }
     }
+}
+
+@Composable
+fun StyledTextField(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    label: String,
+    singleLine: Boolean = true,
+    maxLines: Int = 1
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = singleLine,
+        maxLines = maxLines,
+        shape = RoundedCornerShape(12.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MyYellow,
+            unfocusedBorderColor = TextDarkGray.copy(alpha = 0.3f),
+            focusedLabelColor = MyYellowDark,
+            cursorColor = MyYellowDark,
+            focusedTextColor = TextBlack,
+            unfocusedTextColor = TextBlack
+        )
+    )
 }
