@@ -15,6 +15,7 @@ import es.ulpgc.gamecritic.ui.AddCommentScreen
 import es.ulpgc.gamecritic.ui.ExploreScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import es.ulpgc.gamecritic.viewmodel.ProfileViewModel
+import es.ulpgc.gamecritic.viewmodel.SearchTab
 
 @SuppressLint("UnrememberedGetBackStackEntry")
 @Composable
@@ -28,6 +29,12 @@ fun NavGraph(navController: NavHostController, startDestination: String, onLogou
                 },
                 onUserClick = { user ->
                     navController.navigate("user_profile/${user.id}")
+                },
+                onRecentSearchNavigate = { recent ->
+                    when (recent.tab) {
+                        SearchTab.VIDEOGAMES -> navController.navigate("videogame_detail/${recent.itemId}")
+                        SearchTab.USERS -> navController.navigate("user_profile/${recent.itemId}")
+                    }
                 }
             )
         }

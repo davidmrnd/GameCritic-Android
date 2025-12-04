@@ -34,17 +34,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import es.ulpgc.gamecritic.model.RecentSearch
 import es.ulpgc.gamecritic.model.User
 import es.ulpgc.gamecritic.model.Videogame
 import es.ulpgc.gamecritic.viewmodel.SearchState
 import es.ulpgc.gamecritic.viewmodel.SearchTab
 import es.ulpgc.gamecritic.viewmodel.SearchViewModel
+import es.ulpgc.gamecritic.viewmodel.SearchViewModelFactory
 
-// Colores compartidos con HomeScreen
 private val LightBackground = Color(0xFFF0ECE3)
 private val LightSurface = Color(0xE2FFFFFF)
 private val TextBlack = Color(0xFF111827)
@@ -54,9 +56,13 @@ private val MyYellowDark = Color(0xFFF4D73E)
 
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel = viewModel(),
+    viewModel: SearchViewModel = run {
+        val context = LocalContext.current
+        viewModel(factory = SearchViewModelFactory(context))
+    },
     onVideogameClick: (Videogame) -> Unit = {},
-    onUserClick: (User) -> Unit = {}
+    onUserClick: (User) -> Unit = {},
+    onRecentSearchNavigate: (RecentSearch) -> Unit = {}
 ) {
     val state: SearchState = viewModel.uiState
 
@@ -69,7 +75,6 @@ fun SearchScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            // Cabecera con título y barra de búsqueda dentro de una tarjeta
             Card(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -103,7 +108,6 @@ fun SearchScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Pestañas con subrayado amarillo similar al estilo de secciones en Home
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
@@ -143,7 +147,6 @@ fun SearchScreen(
                             CircularProgressIndicator(color = MyYellowDark)
                         }
                     }
-
                     state.error != null -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -156,19 +159,28 @@ fun SearchScreen(
                             )
                         }
                     }
-
                     state.query.isBlank() -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Empieza escribiendo para buscar videojuegos o usuarios",
-                                style = MaterialTheme.typography.bodyMedium.copy(color = TextDarkGray)
+                        if (state.recentSearches.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Empieza escribiendo para buscar videojuegos o usuarios",
+                                    style = MaterialTheme.typography.bodyMedium.copy(color = TextDarkGray)
+                                )
+                            }
+                        } else {
+                            RecentSearchesSection(
+                                recentSearches = state.recentSearches,
+                                onRecentClick = { recent ->
+                                    onRecentSearchNavigate(recent)
+                                },
+                                onRecentDelete = { viewModel.onRecentSearchDeleteClicked(it) },
+                                onClearAll = { viewModel.onClearAllRecentSearches() }
                             )
                         }
                     }
-
                     state.videogames.isEmpty() && state.users.isEmpty() -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -180,17 +192,21 @@ fun SearchScreen(
                             )
                         }
                     }
-
                     else -> {
                         when (state.activeTab) {
                             SearchTab.VIDEOGAMES -> VideogamesResultList(
                                 videogames = state.videogames,
-                                onVideogameClick = onVideogameClick
+                                onVideogameClick = {
+                                    viewModel.onVideogameResultClick(it)
+                                    onVideogameClick(it)
+                                }
                             )
-
                             SearchTab.USERS -> UsersResultList(
                                 users = state.users,
-                                onUserClick = onUserClick
+                                onUserClick = {
+                                    viewModel.onUserResultClick(it)
+                                    onUserClick(it)
+                                }
                             )
                         }
                     }
@@ -367,6 +383,94 @@ private fun UsersResultList(
                             text = user.name,
                             style = MaterialTheme.typography.bodyMedium.copy(color = TextDarkGray)
                         )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecentSearchesSection(
+    recentSearches: List<RecentSearch>,
+    onRecentClick: (RecentSearch) -> Unit,
+    onRecentDelete: (RecentSearch) -> Unit,
+    onClearAll: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .width(4.dp)
+                        .height(24.dp)
+                        .background(MyYellow, RoundedCornerShape(2.dp))
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "Búsquedas recientes",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        color = TextBlack,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+            Text(
+                text = "Borrar todas",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = TextDarkGray,
+                    fontWeight = FontWeight.SemiBold
+                ),
+                modifier = Modifier.clickable { onClearAll() }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(recentSearches) { recent ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onRecentClick(recent) },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = LightSurface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Búsqueda reciente",
+                            tint = MyYellowDark
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = recent.displayText,
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = TextBlack,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            )
+                        }
+                        IconButton(onClick = { onRecentDelete(recent) }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Eliminar búsqueda",
+                                tint = TextDarkGray
+                            )
+                        }
                     }
                 }
             }
