@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import es.ulpgc.gamecritic.model.RecentSearch
 import es.ulpgc.gamecritic.model.User
 import es.ulpgc.gamecritic.model.Videogame
@@ -54,6 +56,7 @@ import es.ulpgc.gamecritic.viewmodel.SearchState
 import es.ulpgc.gamecritic.viewmodel.SearchTab
 import es.ulpgc.gamecritic.viewmodel.SearchViewModel
 import es.ulpgc.gamecritic.viewmodel.SearchViewModelFactory
+import es.ulpgc.gamecritic.util.ImageUtils
 
 private val LightBackground = Color(0xFFF0ECE3)
 private val LightSurface = Color(0xFFFFFFFF)
@@ -401,6 +404,18 @@ private fun VideogamesResultList(
                 colors = CardDefaults.cardColors(containerColor = LightSurface)
             ) {
                 Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    AsyncImage(
+                        model = game.imageProfile,
+                        contentDescription = "Icono del videojuego",
+                        modifier = Modifier
+                            .width(48.dp)
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        placeholder = painterResource(id = android.R.drawable.ic_menu_report_image),
+                        error = painterResource(id = android.R.drawable.ic_menu_report_image),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop // Hace zoom hasta llenar el alto
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
                             text = game.title,
@@ -438,12 +453,22 @@ private fun UsersResultList(
                 colors = CardDefaults.cardColors(containerColor = LightSurface)
             ) {
                 Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(id = android.R.drawable.ic_menu_myplaces),
-                        contentDescription = null,
-                        tint = MyYellowDark,
-                        modifier = Modifier.size(24.dp)
-                    )
+                    val imageBitmap = ImageUtils.decodeToImageBitmapOrNull(user.profileIcon)
+                    if (imageBitmap != null) {
+                        androidx.compose.foundation.Image(
+                            bitmap = imageBitmap,
+                            contentDescription = "Foto de perfil",
+                            modifier = Modifier.size(48.dp).clip(RoundedCornerShape(24.dp))
+                        )
+                    } else {
+                        AsyncImage(
+                            model = user.profileIcon,
+                            contentDescription = "Foto de perfil",
+                            modifier = Modifier.size(48.dp).clip(RoundedCornerShape(24.dp)),
+                            placeholder = painterResource(id = android.R.drawable.ic_menu_myplaces),
+                            error = painterResource(id = android.R.drawable.ic_menu_myplaces)
+                        )
+                    }
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = user.username,
