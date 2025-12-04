@@ -17,26 +17,28 @@ class RecentSearchRepository(
         }
     }
 
-    suspend fun saveVideogameSearch(videogameId: String, title: String) {
+    suspend fun saveVideogameSearch(videogameId: String, title: String, imageUrl: String) {
         val normalizedTitle = title.trim()
         if (normalizedTitle.isEmpty()) return
         val entity = RecentSearchEntity(
             itemId = videogameId,
             displayText = normalizedTitle,
             timestamp = System.currentTimeMillis(),
-            tab = SearchTab.VIDEOGAMES.name
+            tab = SearchTab.VIDEOGAMES.name,
+            imageUrl = imageUrl
         )
         dao.insertOrUpdate(entity)
     }
 
-    suspend fun saveUserSearch(userId: String, username: String) {
+    suspend fun saveUserSearch(userId: String, username: String, imageUrl: String) {
         val normalizedUsername = username.trim()
         if (normalizedUsername.isEmpty()) return
         val entity = RecentSearchEntity(
             itemId = userId,
             displayText = normalizedUsername,
             timestamp = System.currentTimeMillis(),
-            tab = SearchTab.USERS.name
+            tab = SearchTab.USERS.name,
+            imageUrl = imageUrl
         )
         dao.insertOrUpdate(entity)
     }
@@ -67,6 +69,7 @@ private fun RecentSearchEntity.toDomain(): RecentSearch {
         itemId = itemId,
         displayText = displayText,
         timestamp = timestamp,
-        tab = safeTab
+        tab = safeTab,
+        imageUrl = imageUrl
     )
 }

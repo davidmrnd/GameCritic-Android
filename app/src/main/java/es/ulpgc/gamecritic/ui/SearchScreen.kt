@@ -413,7 +413,7 @@ private fun VideogamesResultList(
                             .clip(RoundedCornerShape(8.dp)),
                         placeholder = painterResource(id = android.R.drawable.ic_menu_report_image),
                         error = painterResource(id = android.R.drawable.ic_menu_report_image),
-                        contentScale = androidx.compose.ui.layout.ContentScale.Crop // Hace zoom hasta llenar el alto
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
@@ -516,7 +516,37 @@ private fun RecentSearchesSection(
                         modifier = Modifier.padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Search, contentDescription = null, tint = TextDarkGray, modifier = Modifier.size(20.dp))
+                        when (recent.tab) {
+                            SearchTab.VIDEOGAMES -> {
+                                AsyncImage(
+                                    model = recent.imageUrl,
+                                    contentDescription = "Icono del videojuego",
+                                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(6.dp)),
+                                    placeholder = painterResource(id = android.R.drawable.ic_menu_report_image),
+                                    error = painterResource(id = android.R.drawable.ic_menu_report_image),
+                                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                )
+                            }
+                            SearchTab.USERS -> {
+                                val imageBitmap = ImageUtils.decodeToImageBitmapOrNull(recent.imageUrl)
+                                if (imageBitmap != null) {
+                                    androidx.compose.foundation.Image(
+                                        bitmap = imageBitmap,
+                                        contentDescription = "Foto de perfil",
+                                        modifier = Modifier.size(32.dp).clip(RoundedCornerShape(16.dp))
+                                    )
+                                } else {
+                                    AsyncImage(
+                                        model = recent.imageUrl,
+                                        contentDescription = "Foto de perfil",
+                                        modifier = Modifier.size(32.dp).clip(RoundedCornerShape(16.dp)),
+                                        placeholder = painterResource(id = android.R.drawable.ic_menu_myplaces),
+                                        error = painterResource(id = android.R.drawable.ic_menu_myplaces),
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                    )
+                                }
+                            }
+                        }
                         Spacer(Modifier.width(12.dp))
                         Text(recent.displayText, modifier = Modifier.weight(1f), color = TextBlack)
                         IconButton(onClick = { onRecentDelete(recent) }, modifier = Modifier.size(24.dp)) {

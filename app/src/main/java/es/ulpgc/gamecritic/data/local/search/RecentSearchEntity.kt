@@ -26,5 +26,8 @@ data class RecentSearchEntity(
     val timestamp: Long,
 
     @ColumnInfo(name = "tab")
-    val tab: String
+    val tab: String,
+
+    @ColumnInfo(name = "image_url")
+    val imageUrl: String
 )

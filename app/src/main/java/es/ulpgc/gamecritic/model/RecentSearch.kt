@@ -7,5 +7,6 @@ data class RecentSearch(
     val itemId: String,
     val displayText: String,
     val timestamp: Long,
-    val tab: SearchTab
+    val tab: SearchTab,
+    val imageUrl: String
 )

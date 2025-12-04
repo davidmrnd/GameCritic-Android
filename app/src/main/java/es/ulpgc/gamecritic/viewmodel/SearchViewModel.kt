@@ -73,13 +73,13 @@ class SearchViewModel(
 
     fun onVideogameResultClick(videogame: Videogame) {
         viewModelScope.launch {
-            recentSearchRepository.saveVideogameSearch(videogame.id, videogame.title)
+            recentSearchRepository.saveVideogameSearch(videogame.id, videogame.title, videogame.imageProfile)
         }
     }
 
     fun onUserResultClick(user: User) {
         viewModelScope.launch {
-            recentSearchRepository.saveUserSearch(user.id, user.username)
+            recentSearchRepository.saveUserSearch(user.id, user.username, user.profileIcon)
         }
     }
 
