@@ -103,13 +103,25 @@ class MainActivity : ComponentActivity() {
                             BottomNavBar(selectedRoute = currentRoute.value, onItemSelected = { route ->
                                 if (route == "profile") {
                                     navController.navigate("profile") {
-                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                        popUpTo("profile") { inclusive = true }
                                         launchSingleTop = true
                                         restoreState = true
                                     }
                                 } else if (route == "following") {
                                     navController.navigate("following") {
-                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                        popUpTo("following") { inclusive = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                } else if (route == "search") {
+                                    navController.navigate("search") {
+                                        popUpTo("search") { inclusive = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                } else if (route == "home") {
+                                    navController.navigate("home") {
+                                        popUpTo("home") { inclusive = true }
                                         launchSingleTop = true
                                         restoreState = true
                                     }
