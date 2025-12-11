@@ -36,17 +36,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import coil.compose.rememberAsyncImagePainter
 import es.ulpgc.gamecritic.model.Comment
+import es.ulpgc.gamecritic.util.ImageUtils
 import es.ulpgc.gamecritic.viewmodel.FollowingViewModel
 import es.ulpgc.gamecritic.viewmodel.UserComments
+import coil.compose.rememberAsyncImagePainter
 
 private val LightBackground = Color(0xFFF0ECE3)
 private val StarColor = Color(0xFFD4B20C)
@@ -115,13 +119,11 @@ fun UserCarouselItem(userComments: UserComments, navController: NavHostControlle
                 .padding(horizontal = 8.dp, vertical = 4.dp)
                 .clickable { navController.navigate("user_profile/${userComments.userId}") }
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(userComments.userProfileIcon),
-                contentDescription = null,
+            UserProfileImage(
+                imageData = userComments.userProfileIcon,
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
+                    .clip(CircleShape)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -222,5 +224,26 @@ fun ReadOnlyRatingBar(
                 modifier = Modifier.size(16.dp)
             )
         }
+    }
+}
+
+@Composable
+fun UserProfileImage(imageData: String, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val imageBitmap: ImageBitmap? = ImageUtils.decodeToImageBitmapOrNull(imageData)
+    if (imageBitmap != null) {
+        Image(
+            painter = BitmapPainter(imageBitmap),
+            contentDescription = null,
+            modifier = modifier,
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        Image(
+            painter = rememberAsyncImagePainter(imageData),
+            contentDescription = null,
+            modifier = modifier,
+            contentScale = ContentScale.Crop
+        )
     }
 }

@@ -101,35 +101,41 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             BottomNavBar(selectedRoute = currentRoute.value, onItemSelected = { route ->
-                                if (route == "profile") {
-                                    navController.navigate("profile") {
-                                        popUpTo("profile") { inclusive = true }
-                                        launchSingleTop = true
-                                        restoreState = true
+                                when (route) {
+                                    "profile" -> {
+                                        navController.navigate("profile") {
+                                            popUpTo("profile") { inclusive = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
                                     }
-                                } else if (route == "following") {
-                                    navController.navigate("following") {
-                                        popUpTo("following") { inclusive = true }
-                                        launchSingleTop = true
-                                        restoreState = true
+                                    "following" -> {
+                                        navController.navigate("following") {
+                                            popUpTo("following") { inclusive = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
                                     }
-                                } else if (route == "search") {
-                                    navController.navigate("search") {
-                                        popUpTo("search") { inclusive = true }
-                                        launchSingleTop = true
-                                        restoreState = true
+                                    "search" -> {
+                                        navController.navigate("search") {
+                                            popUpTo("search") { inclusive = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
                                     }
-                                } else if (route == "home") {
-                                    navController.navigate("home") {
-                                        popUpTo("home") { inclusive = true }
-                                        launchSingleTop = true
-                                        restoreState = true
+                                    "home" -> {
+                                        navController.navigate("home") {
+                                            popUpTo("home") { inclusive = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
                                     }
-                                } else {
-                                    navController.navigate(route) {
-                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
+                                    else -> {
+                                        navController.navigate(route) {
+                                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
                                     }
                                 }
                             }, profileIcon = profileIcon)

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,10 +21,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -62,7 +61,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import es.ulpgc.gamecritic.model.Comment
-import es.ulpgc.gamecritic.model.User
 import es.ulpgc.gamecritic.util.ImageUtils
 import es.ulpgc.gamecritic.viewmodel.ProfileViewModel
 import kotlinx.coroutines.delay
@@ -202,7 +200,7 @@ fun ProfileScreen(
                         .size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Volver",
                         tint = TextBlack
                     )
@@ -345,7 +343,7 @@ fun ProfileHeroCard(
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEE2E2)),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(Icons.Outlined.ExitToApp, null, tint = DangerColor)
+                        Icon(Icons.AutoMirrored.Outlined.ExitToApp, null, tint = DangerColor)
                     }
                 }
             } else {

@@ -27,7 +27,7 @@ class AuthRepository {
                 name = name,
                 username = username,
                 email = email,
-                profileIcon = "https://www.shareicon.net/data/512x512/2016/05/24/770117_people_512x512.png",
+                profileIcon = "https://cdn-icons-png.flaticon.com/512/3870/3870822.png",
                 description = "",
                 following = emptyList(),
                 followers = emptyList()

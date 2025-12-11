@@ -47,7 +47,6 @@ class UserRepository {
         firestore.collection("users").document(uid).update(updates).await()
     }
 
-    // Método optimizado para actualizar perfil e imagen en una sola llamada
     suspend fun updateUserProfileWithImage(
         uid: String,
         name: String,
@@ -99,19 +98,16 @@ class UserRepository {
         }
     }
 
-    // Añadido: seguir a un usuario (actualiza followers y following en una transacción)
     suspend fun followUser(currentUid: String, targetUid: String) {
         if (currentUid == targetUid) return
         firestore.runTransaction { transaction ->
             val targetRef = firestore.collection("users").document(targetUid)
             val currentRef = firestore.collection("users").document(currentUid)
-            // Usar arrayUnion para añadir si no existe
             transaction.update(targetRef, "followers", FieldValue.arrayUnion(currentUid))
             transaction.update(currentRef, "following", FieldValue.arrayUnion(targetUid))
         }.await()
     }
 
-    // Añadido: dejar de seguir a un usuario
     suspend fun unfollowUser(currentUid: String, targetUid: String) {
         if (currentUid == targetUid) return
         firestore.runTransaction { transaction ->
@@ -122,7 +118,6 @@ class UserRepository {
         }.await()
     }
 
-    // Añadido: comprobar si currentUid sigue a targetUid
     suspend fun isFollowing(currentUid: String, targetUid: String): Boolean {
         if (currentUid == targetUid) return false
         val doc = firestore.collection("users").document(currentUid).get().await()

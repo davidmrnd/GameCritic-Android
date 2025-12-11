@@ -200,7 +200,6 @@ fun HomeScreen(navController: NavController) {
                     }
                 }
 
-                // Encabezado de sección Novedades (barra + título)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(bottom = 0.dp, start = 4.dp)
@@ -220,7 +219,6 @@ fun HomeScreen(navController: NavController) {
                     )
                 }
 
-                // Carrusel de videojuegos usando VideogameCarousel directamente
                 VideogameCarousel(
                     videogames = videogames,
                     categoryName = "",

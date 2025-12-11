@@ -35,12 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import es.ulpgc.gamecritic.viewmodel.UserSummary
 
 private val LightSurface = Color(0xFFFFFFFF)
@@ -130,14 +126,9 @@ fun UserListItem(
                 contentAlignment = Alignment.Center
             ) {
                 if (!user.icon.isNullOrBlank()) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(user.icon)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = user.username,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                    UserProfileImage(
+                        imageData = user.icon,
+                        modifier = Modifier.fillMaxSize()
                     )
                 } else {
                     Icon(

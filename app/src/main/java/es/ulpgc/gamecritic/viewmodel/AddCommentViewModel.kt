@@ -40,7 +40,7 @@ class AddCommentViewModel : ViewModel() {
                     val comment: Comment? = commentRepository.getUserCommentForVideogame(userId, id)
                     if (comment != null) {
                         _uiState.value = _uiState.value.copy(
-                            rating = comment.rating.toDouble(),
+                            rating = comment.rating,
                             content = comment.content,
                             isEditMode = true,
                             existingCommentId = comment.id,
@@ -105,14 +105,14 @@ class AddCommentViewModel : ViewModel() {
                 if (current.isEditMode && current.existingCommentId != null) {
                     commentRepository.updateComment(
                         commentId = current.existingCommentId,
-                        rating = current.rating.toDouble(),
+                        rating = current.rating,
                         content = current.content.trim()
                     )
                 } else {
                     commentRepository.addComment(
                         userId = userId,
                         videogameId = current.videogameId,
-                        rating = current.rating.toDouble(),
+                        rating = current.rating,
                         content = current.content.trim()
                     )
                 }
