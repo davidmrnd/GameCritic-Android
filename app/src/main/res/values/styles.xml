@@ -1,0 +1,9 @@
+<resources>
+
+    <style name="Theme.GameCritic" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- SplashScreen fallback for pre-Android 12 -->
+    <style name="Theme.GameCritic.Splash" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
+</resources>

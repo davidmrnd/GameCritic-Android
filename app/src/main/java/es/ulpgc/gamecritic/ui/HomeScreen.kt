@@ -103,7 +103,7 @@ fun HomeScreen(navController: NavController) {
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.logo_gamecritic),
+                            painter = painterResource(id = R.drawable.logo_gamecritic_bg),
                             contentDescription = "Logo GameCritic",
                             modifier = Modifier.size(62.dp)
                         )
